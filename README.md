@@ -24,16 +24,10 @@ sbt (version 0.13.7 used here)
     wget https://dl.bintray.com/sbt/debian/sbt-0.13.7.deb
     dpkg -i sbt-0.13.7.deb
 
-the agora_tally directory of the agora-tally project
+the agora\_tally directory of the agora-tally project
 
     git clone https://github.com/agoravoting/agora-tally.git
     mv agora-tally/agora_tally .
-
-the openstv directory of the openstv project
-
-    git clone https://github.com/agoravoting/openstv.git
-    mv openstv/ openstv2
-    mv openstv2/openstv .
 
 the agora-results directory of the agora-results directory and the executable python script
 
