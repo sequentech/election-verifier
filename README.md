@@ -32,15 +32,6 @@ git checkout next
 mv agora_tally ..
 cd ..
 
-    the openstv directory of the openstv project
-
-git clone https://github.com/agoravoting/openstv.git
-mv openstv/ openstv2
-cd openstv2
-git checkout next
-mv openstv ..
-cd ..
-
     the agora-results directory of the agora-results directory and the executable python script
 
 git clone https://github.com/agoravoting/agora-results.git
