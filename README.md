@@ -24,34 +24,43 @@ sbt (version 0.13.7 used here)
     wget https://dl.bintray.com/sbt/debian/sbt-0.13.7.deb
     dpkg -i sbt-0.13.7.deb
 
-the agora_tally directory of the agora-tally project
+    the agora_tally directory of the agora-tally project
 
-    git clone https://github.com/agoravoting/agora-tally.git
-    mv agora-tally/agora_tally .
+git clone https://github.com/agoravoting/agora-tally.git
+cd agora-tally
+git checkout next
+mv agora_tally ..
+cd ..
 
-the openstv directory of the openstv project
+    the openstv directory of the openstv project
 
-    git clone https://github.com/agoravoting/openstv.git
-    mv openstv/ openstv2
-    mv openstv2/openstv .
+git clone https://github.com/agoravoting/openstv.git
+mv openstv/ openstv2
+cd openstv2
+git checkout next
+mv openstv ..
+cd ..
 
-the agora-results directory of the agora-results directory and the executable python script
+    the agora-results directory of the agora-results directory and the executable python script
 
-    git clone https://github.com/agoravoting/agora-results.git
-    mv agora-results/ agora-results2
-    mv agora-results2/agora_results .
-    mv agora-results2/agora-results .
+git clone https://github.com/agoravoting/agora-results.git
+mv agora-results/ agora-results2
+cd agora-results2
+git checkout next
+mv agora_results ..
+mv agora-results ..
+cd ..
 
-uuencode
+    install uuencode
 
-    apt-get install sharutils
+apt-get install sharutils
 
 Packaging
 ==============
-Run
+    Run
 
-    sbt clean proguard:proguard
-    ./package.sh
+sbt clean proguard:proguard
+sh ./package.sh
 
 this will generate an executable agora-verifier
 
