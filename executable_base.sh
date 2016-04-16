@@ -62,3 +62,4 @@ echo "removing temporal directory: $temp_path"
 rm -rf $temp_path
 
 exit 0
+
