@@ -12,6 +12,49 @@ import tarfile
 import traceback
 from tempfile import mkdtemp
 
+def __pretty_print_base(results, filter_names):
+    '''
+    percent_base:
+      "total" total of the votes, the default
+      "valid options" votes to options
+    '''
+    def get_percentage(num, base):
+      if base == 0:
+          return 0
+      else:
+        return num*100.0/base
+
+    counts = results['questions']
+    for question, i in zip(counts, range(len(counts))):
+        if question['tally_type'] not in filter_names or question.get('no-tally', False):
+            continue
+        print("\n\nQ: %s\n" % question['title'])
+
+        blank_votes = question['totals']['blank_votes']
+        null_votes = question['totals']['null_votes']
+        valid_votes = question['totals']['valid_votes']
+
+        total_votes = blank_votes + null_votes + valid_votes
+
+        percent_base = question['answer_total_votes_percentage']
+        if percent_base == "over-total-votes":
+          base_num = total_votes
+        elif percent_base == "over-total-valid-votes":
+          base_num = question['totals']['valid_votes']
+
+
+        print("Total votes: %d" % total_votes)
+        print("\nOptions (percentages over %s, %d winners):" % (percent_base, question['num_winners']))
+
+        answers = [answer for answer in question['answers']
+            if answer['winner_position'] is not None]
+        answers.sort(key=lambda answer: answer['winner_position'])
+
+        for i, answer in zip(range(len(answers)), answers):
+            print("%d. %s (%0.2f votes)" % (
+                i + 1, answer['text'],
+                answer['total_count']))
+    print("")
 
 def verify_pok_plaintext(pk, proof, ciphertext):
     '''
@@ -72,6 +115,10 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             outvotes_files.append(open(outvotes_path, 'w'))
 
         for i in range(num_questions):
+            # (DISABLED FEATURE) if it's a duplicated question, do not verify it
+            # TODO: verify it's a duplicated question
+            #if "source_question_index" in tally['questions'][i]:
+                #continue
             pubkeys[i]['g'] = int(pubkeys[i]['g'])
             pubkeys[i]['p'] = int(pubkeys[i]['p'])
 
@@ -91,6 +138,10 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             if not hash or (hash is not None and found):
                 try:
                     for i in range(num_questions):
+                        # (DISABLED FEATURE) if it's a duplicated question, do not verify it
+                        # TODO: verify it's a duplicated question
+                        #if "source_question_index" in tally['questions'][i]:
+                            #continue
                         verify_pok_plaintext(pubkeys[i], vote['proofs'][i], vote['choices'][i])
                 except:
                     is_invalid = True
@@ -190,18 +241,11 @@ if __name__ == "__main__":
         print('* processing %s' % dir_raw_path)
 
         print("# Results ##########################################")
-        i = 1
-        print("total number of votes (including blank/invalid votes): %d" % tallyfile_json['total_votes'])
-        for q in tallyfile_json['questions']:
-            print("Question #%d: %s\n" % (i, q['title']))
-            i += 1
-            print("number of options available: %d" % len(q['answers']))
-            print("\nRaw winning options (position):")
-            answers = [answer for answer in q['answers'] if answer['winner_position'] is not None]
-            answers.sort(key=lambda answer: answer['winner_position'])
-            for answer in answers:
-                print('%s (%d)' % (answer['text'], answer['winner_position']))
-            print("####################################################\n")
+        __pretty_print_base(tallyfile_json,
+            filter_names=["plurality-at-large",
+                          "borda-nauru",
+                          "borda",
+                          "pairwise-beta"])
 
         pubkeys_path = os.path.join(dir_raw_path, "pubkeys_json")
         pubkeys = json.loads(open(pubkeys_path).read())
