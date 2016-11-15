@@ -209,10 +209,14 @@ if __name__ == "__main__":
         hash = sys.argv[2]
         print("* Vote hash %s given, we will search the corresponding ballot.." % hash)
 
+    def remove_tmp_dir():
+        if os.path.exists(dir_path):
+            print("* removing extract directory: " + dir_path, end="..")
+            shutil.rmtree(dir_path)
+            print("DONE")
 
     def sig_handler(signum, frame):
-        print("\nTerminating: deleting temporal files..")
-        shutil.rmtree(dir_path)
+        remove_tmp_dir()
         exit(1)
 
     signal.signal(signal.SIGTERM, sig_handler)
@@ -369,9 +373,10 @@ if __name__ == "__main__":
         except Exception as e:
             print("* tally verification FAILED due to an error processing it:")
             traceback.print_exc()
-            if os.path.exists(dir_path):
-                shutil.rmtree(dir_path)
+            remove_tmp_dir()
             sys.exit(1)
+
+        remove_tmp_dir()
 
     if hash and not hash_found:
         print("* ERROR: vote hash %s NOT FOUND" % hash)
