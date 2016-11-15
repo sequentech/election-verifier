@@ -27,6 +27,8 @@ import tarfile
 import traceback
 from tempfile import mkdtemp
 
+hash_f = hashlib.sha256
+
 def __pretty_print_base(results, filter_names):
     '''
     percent_base:
@@ -71,6 +73,13 @@ def __pretty_print_base(results, filter_names):
                 answer['total_count']))
     print("")
 
+def compare_hashes(message, hash1, hash2):
+    if (hashone != hashtwo):
+        print("* %s FAILED: %s != %s" % (
+            message, hashone, hashtwo
+        ))
+        sys.exit(1)
+
 def verify_pok_plaintext(pk, proof, ciphertext):
     '''
     verifies the proof of knowledge of the plaintext, given encrypted data and
@@ -102,7 +111,7 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     )
 
     # verify the challenge is valid
-    hash = hashlib.sha256()
+    hash = hash_f()
     hash.update(("%d/%d" % (alpha, commitment)).encode('utf-8'))
     challenge_calculated = int(hash.hexdigest(), 16)
     assert challenge_calculated == challenge
@@ -145,7 +154,7 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
 
             if linenum % 1000 == 0:
                 print("* verified %d votes (%d invalid).." % (linenum, num_invalid_votes))
-            if hash and not found and hashlib.sha256(line[:-1].encode('utf-8')).hexdigest() == hash:
+            if hash and not found and hash_f(line[:-1].encode('utf-8')).hexdigest() == hash:
                 found = True
                 print("* Hash of the vote was successfully found: %s" % line)
 
@@ -229,7 +238,19 @@ if __name__ == "__main__":
     tallyfile = os.path.join(dir_path, 'results.json')
     tallyfile_s = open(tallyfile).read()
     tallyfile_json = json.loads(tallyfile_s)
-    hashone = hashlib.md5(tallyfile_s.encode('utf-8')).hexdigest()
+    if "results_dirname" in tallyfile_json:
+        if type(tallyfile_json["results_dirname"]) != str:
+            print("* tally verification FAILED: invalid results_dirname")
+            sys.exit(1)
+        del tallyfile_json["results_dirname"]
+        tallyfile_s = json.dumps(
+            tallyfile_json,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ": "),
+            indent=4
+        )+"\n"
+    hashone = hash_f(tallyfile_s.encode('utf-8')).hexdigest()
 
     # results hash two
     results_config_path = os.path.join(dir_path, 'config.json')
@@ -240,11 +261,9 @@ if __name__ == "__main__":
     print('* running %s ' % command)
     ret = subprocess.check_output(command)
     tallyfile_json2 = json.loads(ret.decode(encoding='UTF-8'))
-    hashtwo = hashlib.md5(ret).hexdigest()
+    hashtwo = hash_f(ret).hexdigest()
 
-    if (hashone != hashtwo):
-        print("* tally verification FAILED")
-        sys.exit(1)
+    compare_hashes("tally verification", hashone, hashtwo)
 
     print("* results hash verification OK")
 
@@ -321,8 +340,8 @@ if __name__ == "__main__":
 
                 path1_s = open(path1).read()
                 path2_s = open(path2).read()
-                hash1 = hashlib.md5(path1_s.encode('utf-8')).hexdigest()
-                hash2 = hashlib.md5(path2_s.encode('utf-8')).hexdigest()
+                hash1 = hash_f(path1_s.encode('utf-8')).hexdigest()
+                hash2 = hash_f(path2_s.encode('utf-8')).hexdigest()
                 if (hash1 != hash2):
                     print("* plaintexts_json verification FAILED")
                     raise Exception()
@@ -339,8 +358,8 @@ if __name__ == "__main__":
 
                 path1_s = open(path1, "rb").read()
                 path2_s = open(path2, "rb").read()
-                hash1 = hashlib.md5(path1_s).hexdigest()
-                hash2 = hashlib.md5(path2_s).hexdigest()
+                hash1 = hash_f(path1_s).hexdigest()
+                hash2 = hash_f(path2_s).hexdigest()
                 if (hash1 != hash2):
                     print("* ciphertexts_json verification FAILED")
                     raise Exception()
