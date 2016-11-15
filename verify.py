@@ -29,6 +29,28 @@ from tempfile import mkdtemp
 
 hash_f = hashlib.sha256
 
+class TextColor:
+    Header = '\033[95m'
+    OkBlue = '\033[94m'
+    OkGreen = '\033[92m'
+    Warn = '\033[93m'
+    Fail = '\033[91m'
+    EndColor = '\033[0m'
+    Bold = '\033[1m'
+    Underline = '\033[4m'
+
+def print_color(color, text):
+    print(color + text + TextColor.EndColor)
+
+def print_success(text):
+    print_color(TextColor.OkGreen, text)
+
+def print_fail(text):
+    print_color(TextColor.Fail, text)
+
+def print_warn(text):
+    print_color(TextColor.Warn, text)
+
 def __pretty_print_base(results, filter_names):
     '''
     percent_base:
@@ -75,7 +97,7 @@ def __pretty_print_base(results, filter_names):
 
 def compare_hashes(message, hash1, hash2):
     if (hashone != hashtwo):
-        print("* %s FAILED: %s != %s" % (
+        print_fail("* %s FAILED: %s != %s" % (
             message, hashone, hashtwo
         ))
         sys.exit(1)
@@ -153,10 +175,10 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
 
 
             if linenum % 1000 == 0:
-                print("* verified %d votes (%d invalid).." % (linenum, num_invalid_votes))
+                print_success("* verified %d votes (%d invalid).." % (linenum, num_invalid_votes))
             if hash and not found and hash_f(line[:-1].encode('utf-8')).hexdigest() == hash:
                 found = True
-                print("* Hash of the vote was successfully found: %s" % line)
+                print_success("* Hash of the vote was successfully found: %s" % line)
 
             is_invalid = False
             if not hash or (hash is not None and found):
@@ -186,20 +208,20 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
 
         for f in outvotes_files:
           f.close()
-    print("* ..finished. Verified %d votes (%d invalid)" % (linenum, num_invalid_votes))
+    print_success("* ..finished. Verified %d votes (%d invalid)" % (linenum, num_invalid_votes))
     return num_invalid_votes, found
 
 if __name__ == "__main__":
 
     v = sys.version_info
     if v.major < 3 or v.minor < 3:
-        print("python3 must be at least 3.3, but it's %d.%d" % (v.major, v.minor))
+        print_fail("python3 must be at least 3.3, but it's %d.%d" % (v.major, v.minor))
         sys.exit(1)
 
     RANDOM_SOURCE=".rnd"
 
     if len(sys.argv) < 2:
-        print('verify.py <tally file> [vote hash]')
+        print_fail('verify.py <tally file> [vote hash]')
         sys.exit(1)
 
     # untar the plaintexts
@@ -219,6 +241,7 @@ if __name__ == "__main__":
             print("DONE")
 
     def sig_handler(signum, frame):
+        print_fail("* caught an exit signal")
         remove_tmp_dir()
         exit(1)
 
@@ -247,7 +270,7 @@ if __name__ == "__main__":
     tallyfile_json = json.loads(tallyfile_s)
     if "results_dirname" in tallyfile_json:
         if type(tallyfile_json["results_dirname"]) != str:
-            print("* tally verification FAILED: invalid results_dirname")
+            print_fail("* tally verification FAILED: invalid results_dirname")
             sys.exit(1)
         del tallyfile_json["results_dirname"]
         tallyfile_s = json.dumps(
@@ -272,7 +295,7 @@ if __name__ == "__main__":
 
     compare_hashes("tally verification", hashone, hashtwo)
 
-    print("* results hash verification OK")
+    print_success("* results hash verification OK")
 
     hash_found = False
 
@@ -309,7 +332,7 @@ if __name__ == "__main__":
             print("* running './pverify.sh " + str(RANDOM_SOURCE) + " " + dir_raw_path + "'")
             pverify_ret = subprocess.call(['./pverify.sh', RANDOM_SOURCE, dir_raw_path])
             if (pverify_ret != 0):
-                print("* mixing and decryption verification FAILED")
+                print_fail("* mixing and decryption verification FAILED")
                 raise Exception()
 
             # check if plaintexts_json is generated correctly from the already verified
@@ -325,11 +348,11 @@ if __name__ == "__main__":
                 print("* processing question_dir " + question_dir)
 
                 if not question_dir.startswith("%d-" % i):
-                    print("* invalid question dirname FAILED")
+                    print_fail("* invalid question dirname FAILED")
                     raise Exception()
 
                 if i >= len(tallyfile_json2["questions"]):
-                    print("* invalid question dirname FAILED")
+                    print_fail("* invalid question dirname FAILED")
                     raise Exception()
 
                 cwd = os.getcwd()
@@ -350,9 +373,9 @@ if __name__ == "__main__":
                 hash1 = hash_f(path1_s.encode('utf-8')).hexdigest()
                 hash2 = hash_f(path2_s.encode('utf-8')).hexdigest()
                 if (hash1 != hash2):
-                    print("* plaintexts_json verification FAILED")
+                    print_fail("* plaintexts_json verification FAILED")
                     raise Exception()
-                print("* plaintexts_json verification OK")
+                print_success("* plaintexts_json verification OK")
 
                 # verify ciphertexts raw conversion
                 print("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -ciphs -ini json ciphertexts_json ciphertexts_raw'")
@@ -368,13 +391,13 @@ if __name__ == "__main__":
                 hash1 = hash_f(path1_s).hexdigest()
                 hash2 = hash_f(path2_s).hexdigest()
                 if (hash1 != hash2):
-                    print("* ciphertexts_json verification FAILED")
+                    print_fail("* ciphertexts_json verification FAILED")
                     raise Exception()
-                print("* ciphertexts_json verification OK")
+                print_success("* ciphertexts_json verification OK")
 
                 i += 1
         except Exception as e:
-            print("* tally verification FAILED due to an error processing it:")
+            print_fail("* tally verification FAILED due to an error processing it:")
             traceback.print_exc()
             remove_tmp_dir()
             sys.exit(1)
@@ -382,5 +405,7 @@ if __name__ == "__main__":
         remove_tmp_dir()
 
     if hash and not hash_found:
-        print("* ERROR: vote hash %s NOT FOUND" % hash)
+        print_fail("* ERROR: vote hash %s NOT FOUND" % hash)
         raise Exception()
+
+    print_success("* ALL verifications succeeded")
