@@ -167,6 +167,9 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
                         #if "source_question_index" in tally['questions'][i]:
                             #continue
                         verify_pok_plaintext(pubkeys[i], vote['proofs'][i], vote['choices'][i])
+                except SystemExit as e:
+                    break
+                    raise e
                 except:
                     is_invalid = True
                     num_invalid_votes += 1
@@ -211,7 +214,7 @@ if __name__ == "__main__":
 
     def remove_tmp_dir():
         if os.path.exists(dir_path):
-            print("* removing extract directory: " + dir_path, end="..")
+            print("\n* removing extract directory: " + dir_path, end="..")
             shutil.rmtree(dir_path)
             print("DONE")
 
