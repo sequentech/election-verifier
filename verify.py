@@ -42,6 +42,10 @@ class TextColor:
 def print_color(color, text):
     print(color + text + TextColor.EndColor)
 
+
+def print_info(text):
+    print_color(TextColor.OkBlue, text)
+
 def print_success(text):
     print_color(TextColor.OkGreen, text)
 
@@ -67,7 +71,7 @@ def __pretty_print_base(results, filter_names):
     for question, i in zip(counts, range(len(counts))):
         if question['tally_type'] not in filter_names or question.get('no-tally', False):
             continue
-        print("\n\nQ: %s\n" % question['title'])
+        print_info("\n\nQ: %s\n" % question['title'])
 
         blank_votes = question['totals']['blank_votes']
         null_votes = question['totals']['null_votes']
@@ -82,15 +86,15 @@ def __pretty_print_base(results, filter_names):
           base_num = question['totals']['valid_votes']
 
 
-        print("Total votes: %d" % total_votes)
-        print("\nOptions (percentages over %s, %d winners):" % (percent_base, question['num_winners']))
+        print_info("Total votes: %d" % total_votes)
+        print_info("\nOptions (percentages over %s, %d winners):" % (percent_base, question['num_winners']))
 
         answers = [answer for answer in question['answers']
             if answer['winner_position'] is not None]
         answers.sort(key=lambda answer: answer['winner_position'])
 
         for i, answer in zip(range(len(answers)), answers):
-            print("%d. %s (%0.2f votes)" % (
+            print_info("%d. %s (%0.2f votes)" % (
                 i + 1, answer['text'],
                 answer['total_count']))
     print("")
@@ -232,7 +236,7 @@ if __name__ == "__main__":
     hash = None
     if len(sys.argv) > 2:
         hash = sys.argv[2]
-        print("* Vote hash %s given, we will search the corresponding ballot.." % hash)
+        print_info("* Vote hash %s given, we will search the corresponding ballot.." % hash)
 
     def remove_tmp_dir():
         if os.path.exists(dir_path):
@@ -288,7 +292,7 @@ if __name__ == "__main__":
     command = ['./agora-results', '-t']
     command.extend(tally_list)
     command.extend(['-c', results_config_path, '-s', '-o', 'json'])
-    print('* running %s ' % command)
+    print_info('* running %s ' % command)
     ret = subprocess.check_output(command)
     tallyfile_json2 = json.loads(ret.decode(encoding='UTF-8'))
     hashtwo = hash_f(ret).hexdigest()
@@ -304,7 +308,7 @@ if __name__ == "__main__":
         dir_raw_path = os.path.join(dir_path, 'tally-raw-%d' % number)
         print('* processing %s' % dir_raw_path)
 
-        print("# Results ##########################################")
+        print_info("# Results ##########################################")
         __pretty_print_base(tallyfile_json,
             filter_names=["plurality-at-large",
                           "borda-nauru",
@@ -314,7 +318,7 @@ if __name__ == "__main__":
         pubkeys_path = os.path.join(dir_raw_path, "pubkeys_json")
         pubkeys = json.loads(open(pubkeys_path).read())
 
-        print("* verifying proofs of knowledge of the plaintexts...")
+        print_info("* verifying proofs of knowledge of the plaintexts...")
         try:
             num_encrypted_invalid_votes, found = verify_votes_pok(
                 pubkeys,
@@ -322,18 +326,19 @@ if __name__ == "__main__":
                 tallyfile_json,
                 hash)
             hash_found = hash_found or found
-            print("* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes)
+            print_success("* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes)
 
             if hash is not None:
-                print("* ballot hash verification OK")
+                print_success("* ballot hash verification OK")
                 shutil.rmtree(dir_path)
                 sys.exit(0)
 
-            print("* running './pverify.sh " + str(RANDOM_SOURCE) + " " + dir_raw_path + "'")
+            print_info("* Verifying proofs of shuffle and decryption by running './pverify.sh " + str(RANDOM_SOURCE) + " " + dir_raw_path + "'")
             pverify_ret = subprocess.call(['./pverify.sh', RANDOM_SOURCE, dir_raw_path])
             if (pverify_ret != 0):
                 print_fail("* mixing and decryption verification FAILED")
                 raise Exception()
+            print_success("* Verification of tally proofs of shuffle and decryption OK")
 
             # check if plaintexts_json is generated correctly from the already verified
             # plaintexts raw proofs
@@ -345,7 +350,7 @@ if __name__ == "__main__":
                 if not os.path.isdir(question_path):
                     continue
 
-                print("* processing question_dir " + question_dir)
+                print_info("* processing question_dir " + question_dir)
 
                 if not question_dir.startswith("%d-" % i):
                     print_fail("* invalid question dirname FAILED")
@@ -359,7 +364,7 @@ if __name__ == "__main__":
                 vmnc = os.path.join(os.getcwd(), "vmnc.sh")
 
                 # verify plaintexts raw conversion
-                print("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -plain -outi json proofs/PlaintextElements.bt "
+                print_info("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -plain -outi json proofs/PlaintextElements.bt "
                     "plaintexts_json2'")
                 subprocess.call([vmnc, RANDOM_SOURCE, "-plain", "-outi", "json",
                                 "proofs/PlaintextElements.bt", "plaintexts_json2"],
@@ -378,7 +383,7 @@ if __name__ == "__main__":
                 print_success("* plaintexts_json verification OK")
 
                 # verify ciphertexts raw conversion
-                print("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -ciphs -ini json ciphertexts_json ciphertexts_raw'")
+                print_info("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -ciphs -ini json ciphertexts_json ciphertexts_raw'")
                 subprocess.call([vmnc, RANDOM_SOURCE, "-ciphs", "-ini", "json",
                                 "ciphertexts_json", "ciphertexts_raw"],
                                 cwd=question_path)
