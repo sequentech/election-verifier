@@ -312,6 +312,7 @@ if __name__ == "__main__":
         __pretty_print_base(tallyfile_json,
             filter_names=["plurality-at-large",
                           "borda-nauru",
+                          "desborda",
                           "borda",
                           "pairwise-beta"])
 
