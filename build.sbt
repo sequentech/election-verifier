@@ -15,7 +15,7 @@
 
 name := "agora-verifier"
 
-version := "17.04"
+version := "103.111.1"
 
 scalaVersion := "2.10.3"
 
