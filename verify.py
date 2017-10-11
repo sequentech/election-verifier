@@ -314,6 +314,7 @@ if __name__ == "__main__":
                           "borda-nauru",
                           "desborda",
                           "desborda2",
+                          "desborda3",
                           "borda",
                           "pairwise-beta"])
 
