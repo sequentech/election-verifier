@@ -313,6 +313,8 @@ if __name__ == "__main__":
             filter_names=["plurality-at-large",
                           "borda-nauru",
                           "desborda",
+                          "desborda2",
+                          "desborda3",
                           "borda",
                           "pairwise-beta"])
 
