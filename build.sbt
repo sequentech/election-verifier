@@ -21,6 +21,13 @@ scalaVersion := "2.10.3"
 
 mainClass := Some("org.agoravoting.agora.Verifier")
 
+licenses += ("AGPL-3.0", url("https://www.gnu.org/licenses/agpl-3.0.en.html"))
+
+organizationName := "Agora Voting SL"
+
+organizationHomepage := Some(url("https://nvotes.com"))
+
+
 javaOptions in run += "-Djava.security.egd=file:/dev/./urandom"
 
 fork in run := true
