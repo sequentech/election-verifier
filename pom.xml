@@ -5,6 +5,7 @@
     <artifactId>agora-verifier_2.10</artifactId>
     <packaging>jar</packaging>
     <description>agora-verifier</description>
+    <url>https://github.com/agoravoting/agora-verifier</url>
     <version>20.2.0</version>
     <licenses>
         <license>
@@ -14,6 +15,7 @@
         </license>
     </licenses>
     <name>agora-verifier</name>
+    <inceptionYear>2015</inceptionYear>
     <organization>
         <name>Agora Voting SL</name>
         <url>https://nvotes.com</url>
