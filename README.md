@@ -2,7 +2,7 @@ agora-verifier
 ==============
 
 
-agora-verifier performs tally and cryptographic verification of the election process, including key generation, shuffling and joint-decryption, using the verificatum library by Douglas Wikström
+agora-verifier performs tally and cryptographic verification of the election process, including key generation, shuffling and joint-decryption, using the vfork library.
 
 Requirements
 ==============
