@@ -203,8 +203,10 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
                             vote['proofs'][i],
                             vote['choices'][i]
                         )
-                        if hash is not None and found:
-                            print_success("* Verified POK of the found ballot")
+                    if hash is not None and found:
+                        print_success("* Verified POK of the found ballot")
+                        return 0, found
+
                 except SystemExit as e:
                     break
                     raise e
