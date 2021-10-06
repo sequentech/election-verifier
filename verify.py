@@ -173,9 +173,9 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             vote = json.loads(line)
             linenum += 1
 
-            if linenum % 1000 == 0:
+            if linenum % 1000 == 0 and not hash:
                 print_success(
-                    "* verified %d votes (%d invalid).." % (
+                    "* Verified %d votes (%d invalid).." % (
                         linenum, num_invalid_votes
                     )
                 )
@@ -187,7 +187,7 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             ):
                 found = True
                 print_success(
-                    "* Hash of the vote was successfully found: %s" % line
+                    "* Hash of the vote was successfully found: %s" % hash
                 )
 
             is_invalid = False
@@ -203,6 +203,8 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
                             vote['proofs'][i],
                             vote['choices'][i]
                         )
+                        if hash is not None and found:
+                            print_success("* Verified POK of the found ballot")
                 except SystemExit as e:
                     break
                     raise e
@@ -228,12 +230,14 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
 
         for f in outvotes_files:
           f.close()
-    print_success(
-        "* ..finished. Verified %d votes (%d invalid)" % (
-            linenum,
-            num_invalid_votes
+    
+    if not hash:
+        print_success(
+            "* ..finished. Verified %d votes (%d invalid)" % (
+                linenum,
+                num_invalid_votes
+            )
         )
-    )
     return num_invalid_votes, found
 
 if __name__ == "__main__":
@@ -272,7 +276,7 @@ if __name__ == "__main__":
             shutil.rmtree(dir_path)
             print("DONE")
 
-    def sig_handler(signum, frame):
+    def sig_handler(__signum, __frame):
         print_fail("* caught an exit signal")
         remove_tmp_dir()
         exit(1)
@@ -371,13 +375,21 @@ if __name__ == "__main__":
                 tallyfile_json,
                 hash
             )
-            if not hash_found and found:
-                print_success(
-                    "* Ballot hash %s found!" % hash
-                )
             hash_found = hash_found or found
             print_success(
-                "* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes)
+                "* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes
+            )
+
+            if hash:
+                # if we got a hash and we found it, we are done
+                if hash_found:
+                    print_success("* ALL verifications succeeded")
+                    remove_tmp_dir()
+                    sys.exit(0)
+                # in any case, do not verify the proofs of shuffle or decryption
+                # if the hash was provided
+                else:
+                    continue
 
             print_info(
                 "* Verifying proofs of shuffle and decryption by running " +
