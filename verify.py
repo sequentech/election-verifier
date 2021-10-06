@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This file is part of agora-verifier.
-# Copyright (C) 2015-2016  Agora Voting SL <agora@agoravoting.com>
+# Copyright (C) 2015-2021  Agora Voting SL <agora@agoravoting.com>
 
 # agora-verifier is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -100,9 +100,9 @@ def __pretty_print_base(results, filter_names):
     print("")
 
 def compare_hashes(message, hash1, hash2):
-    if (hashone != hashtwo):
+    if (hash1 != hash2):
         print_fail("* %s FAILED: %s != %s" % (
-            message, hashone, hashtwo
+            message, hash1, hash2
         ))
         sys.exit(1)
 
@@ -111,12 +111,13 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     verifies the proof of knowledge of the plaintext, given encrypted data and
     the public key
 
-    Format:
-        * "ballot" must be a dictionary with keys "alpha", "beta", "commitment",
-          "challenge", "response", and values must be integers.
-        * "pk" must be a dictonary with keys "g", "p", and values must be
-          integers.
-    # http://courses.csail.mit.edu/6.897/spring04/L19.pdf - 2.1 Proving Knowledge of Plaintext
+    Format: * "ballot" must be a dictionary with keys "alpha", "beta",
+        "commitment", "challenge", "response", and values must be integers. *
+        "pk" must be a dictonary with keys "g", "p", and values must be
+        integers.
+    
+    http://courses.csail.mit.edu/6.897/spring04/L19.pdf
+    2.1 Proving Knowledge of Plaintext
     '''
     pk_p = pk['p']
     pk_g = pk['g']
@@ -124,17 +125,6 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     response = int(proof['response'])
     challenge =  int(proof['challenge'])
     alpha = int(ciphertext['alpha'])
-
-    pk = dict(
-        p=pk_p,
-        g=pk_g
-    )
-    ballot = dict(
-        commitment=commitment,
-        response=response,
-        challenge=challenge,
-        alpha=alpha
-    )
 
     # verify the challenge is valid
     hash = hash_f()
@@ -145,22 +135,28 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     first_part = pow(pk_g, response, pk_p)
     second_part = (commitment * pow(alpha, challenge, pk_p)) % pk_p
 
-    # check g^response == commitment * (g^t) ^ challenge == commitment * (alpha) ^ challenge
+    # check 
+    # g^response == 
+    #   commitment * (g^t) ^ challenge == 
+    #   commitment * (alpha) ^ challenge
     assert first_part == second_part
 
 def verify_votes_pok(pubkeys, dir_path, tally, hash):
     num_invalid_votes = 0
     linenum = 0
-    with open(os.path.join(dir_path, 'ciphertexts_json'), mode='r') as votes_file:
+    ciphertexts_path = os.path.join(dir_path, 'ciphertexts_json')
+
+    with open(ciphertexts_path, mode='r') as votes_file:
         num_questions = len(tally['questions'])
         # we will write the ciphertexts for each question in here
         outvotes_files = []
-        ldir = os.listdir(dir_path)
-        ldir.sort()
-        for question_dir in ldir:
+        list_dir = os.listdir(dir_path)
+        list_dir.sort()
+        for question_dir in list_dir:
             question_path = os.path.join(dir_path, question_dir)
             if not os.path.isdir(question_path):
-              continue
+                continue
+
             outvotes_path = os.path.join(question_path, 'ciphertexts_json')
             outvotes_files.append(open(outvotes_path, 'w'))
 
@@ -177,12 +173,22 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             vote = json.loads(line)
             linenum += 1
 
-
-            if linenum % 1000 == 0:
-                print_success("* verified %d votes (%d invalid).." % (linenum, num_invalid_votes))
-            if hash and not found and hash_f(line[:-1].encode('utf-8')).hexdigest() == hash:
+            if linenum % 1000 == 0 and not hash:
+                print_success(
+                    "* Verified %d votes (%d invalid).." % (
+                        linenum, num_invalid_votes
+                    )
+                )
+            
+            if (
+                hash and 
+                not found and
+                hash_f(line[:-1].encode('utf-8')).hexdigest() == hash
+            ):
                 found = True
-                print_success("* Hash of the vote was successfully found: %s" % line)
+                print_success(
+                    "* Hash of the vote was successfully found: %s" % hash
+                )
 
             is_invalid = False
             if not hash or (hash is not None and found):
@@ -192,7 +198,15 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
                         # TODO: verify it's a duplicated question
                         #if "source_question_index" in tally['questions'][i]:
                             #continue
-                        verify_pok_plaintext(pubkeys[i], vote['proofs'][i], vote['choices'][i])
+                        verify_pok_plaintext(
+                            pubkeys[i],
+                            vote['proofs'][i],
+                            vote['choices'][i]
+                        )
+                    if hash is not None and found:
+                        print_success("* Verified POK of the found ballot")
+                        return 0, found
+
                 except SystemExit as e:
                     break
                     raise e
@@ -201,25 +215,43 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
                     num_invalid_votes += 1
 
             if is_invalid:
-              continue
+                continue
 
             choice_num = 0
             for f in outvotes_files:
-              f.write(json.dumps(vote['choices'][choice_num],
-                  ensure_ascii=False, sort_keys=True, separators=(",", ":")))
-              f.write("\n")
-              choice_num += 1
+                f.write(
+                    json.dumps(
+                        vote['choices'][choice_num],
+                        ensure_ascii=False,
+                        sort_keys=True,
+                        separators=(",", ":")
+                    )
+                )
+                f.write("\n")
+                choice_num += 1
 
         for f in outvotes_files:
           f.close()
-    print_success("* ..finished. Verified %d votes (%d invalid)" % (linenum, num_invalid_votes))
+    
+    if not hash:
+        print_success(
+            "* ..finished. Verified %d votes (%d invalid)" % (
+                linenum,
+                num_invalid_votes
+            )
+        )
     return num_invalid_votes, found
 
 if __name__ == "__main__":
 
     v = sys.version_info
     if v.major < 3 or v.minor < 3:
-        print_fail("python3 must be at least 3.3, but it's %d.%d" % (v.major, v.minor))
+        print_fail(
+            "python3 must be at least 3.3, but it's %d.%d" % (
+                v.major,
+                v.minor
+            )
+        )
         sys.exit(1)
 
     RANDOM_SOURCE=".rnd"
@@ -236,7 +268,9 @@ if __name__ == "__main__":
     hash = None
     if len(sys.argv) > 2:
         hash = sys.argv[2]
-        print_info("* Vote hash %s given, we will search the corresponding ballot.." % hash)
+        print_info(
+            "* Vote hash %s given, we will search the corresponding ballot.." % hash
+        )
 
     def remove_tmp_dir():
         if os.path.exists(dir_path):
@@ -244,7 +278,7 @@ if __name__ == "__main__":
             shutil.rmtree(dir_path)
             print("DONE")
 
-    def sig_handler(signum, frame):
+    def sig_handler(__signum, __frame):
         print_fail("* caught an exit signal")
         remove_tmp_dir()
         exit(1)
@@ -256,13 +290,23 @@ if __name__ == "__main__":
     print("* extracted to " + dir_path)
 
     # raw tallies
-    tallies = [ f for f in os.listdir(dir_path) if os.path.isfile(os.path.join(dir_path, f)) and f.endswith('tar.gz')]
-    tallies.sort(key = lambda x: int(x.split('.')[0]))
+    tallies = [
+        file_name 
+        for file_name in os.listdir(dir_path)
+        if (
+            os.path.isfile(os.path.join(dir_path, file_name)) and
+            file_name.endswith('tar.gz')
+        )
+    ]
+    tallies.sort(key=lambda x: int(x.split('.')[0]))
 
     # first extract tallies in order to run agora-results
-    for next in tallies:
-        number = int(next.split('.')[0])
-        tally_raw_gz = tarfile.open(os.path.join(dir_path, next), mode="r:gz")
+    for current_tally in tallies:
+        number = int(current_tally.split('.')[0])
+        tally_raw_gz = tarfile.open(
+            os.path.join(dir_path, current_tally), 
+            mode="r:gz"
+        )
         dir_raw_path = os.path.join(dir_path, 'tally-raw-%d' % number)
         os.mkdir(dir_raw_path)
         tally_raw_gz.extractall(path=dir_raw_path)
@@ -275,6 +319,7 @@ if __name__ == "__main__":
     if "results_dirname" in tallyfile_json:
         if type(tallyfile_json["results_dirname"]) != str:
             print_fail("* tally verification FAILED: invalid results_dirname")
+            remove_tmp_dir()
             sys.exit(1)
         del tallyfile_json["results_dirname"]
         tallyfile_s = json.dumps(
@@ -288,7 +333,7 @@ if __name__ == "__main__":
 
     # results hash two
     results_config_path = os.path.join(dir_path, 'config.json')
-    tally_list = [os.path.join(dir_path, t) for t in tallies]
+    tally_list = [os.path.join(dir_path, tally) for tally in tallies]
     command = ['./agora-results', '-t']
     command.extend(tally_list)
     command.extend(['-c', results_config_path, '-s', '-o', 'json'])
@@ -303,20 +348,23 @@ if __name__ == "__main__":
 
     hash_found = False
 
-    for next in tallies:
-        number = int(next.split('.')[0])
+    for current_tally in tallies:
+        number = int(current_tally.split('.')[0])
         dir_raw_path = os.path.join(dir_path, 'tally-raw-%d' % number)
         print('* processing %s' % dir_raw_path)
 
         print_info("# Results ##########################################")
         __pretty_print_base(tallyfile_json,
-            filter_names=["plurality-at-large",
-                          "borda-nauru",
-                          "desborda",
-                          "desborda2",
-                          "desborda3",
-                          "borda",
-                          "pairwise-beta"])
+            filter_names=[
+                "plurality-at-large",
+                "borda-nauru",
+                "desborda",
+                "desborda2",
+                "desborda3",
+                "borda",
+                "pairwise-beta"
+            ]
+        )
 
         pubkeys_path = os.path.join(dir_raw_path, "pubkeys_json")
         pubkeys = json.loads(open(pubkeys_path).read())
@@ -327,28 +375,46 @@ if __name__ == "__main__":
                 pubkeys,
                 dir_raw_path,
                 tallyfile_json,
-                hash)
+                hash
+            )
             hash_found = hash_found or found
-            print_success("* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes)
+            print_success(
+                "* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes
+            )
 
-            if hash is not None:
-                print_success("* ballot hash verification OK")
-                shutil.rmtree(dir_path)
-                sys.exit(0)
+            if hash:
+                # if we got a hash and we found it, we are done
+                if hash_found:
+                    print_success("* ALL verifications succeeded")
+                    remove_tmp_dir()
+                    sys.exit(0)
+                # in any case, do not verify the proofs of shuffle or decryption
+                # if the hash was provided
+                else:
+                    continue
 
-            print_info("* Verifying proofs of shuffle and decryption by running './pverify.sh " + str(RANDOM_SOURCE) + " " + dir_raw_path + "'")
-            pverify_ret = subprocess.call(['./pverify.sh', RANDOM_SOURCE, dir_raw_path])
+            print_info(
+                "* Verifying proofs of shuffle and decryption by running " +
+                "'./pverify.sh " + str(RANDOM_SOURCE) + " " + dir_raw_path + "'"
+            )
+            pverify_ret = subprocess.call(
+                ['./pverify.sh', RANDOM_SOURCE, dir_raw_path]
+            )
+            
             if (pverify_ret != 0):
                 print_fail("* mixing and decryption verification FAILED")
                 raise Exception()
-            print_success("* Verification of tally proofs of shuffle and decryption OK")
+            print_success(
+                "* Verification of tally proofs of shuffle and " +
+                "decryption OK"
+            )
 
-            # check if plaintexts_json is generated correctly from the already verified
-            # plaintexts raw proofs
+            # check if plaintexts_json is generated correctly from the already
+            # verified plaintexts raw proofs
             i = 0
-            ldir = os.listdir(dir_raw_path)
-            ldir.sort()
-            for question_dir in ldir:
+            list_dir = os.listdir(dir_raw_path)
+            list_dir.sort()
+            for question_dir in list_dir:
                 question_path = os.path.join(dir_raw_path, question_dir)
                 if not os.path.isdir(question_path):
                     continue
@@ -367,14 +433,32 @@ if __name__ == "__main__":
                 vmnc = os.path.join(os.getcwd(), "vmnc.sh")
 
                 # verify plaintexts raw conversion
-                print_info("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -plain -outi json proofs/PlaintextElements.bt "
-                    "plaintexts_json2'")
-                subprocess.call([vmnc, RANDOM_SOURCE, "-plain", "-outi", "json",
-                                "proofs/PlaintextElements.bt", "plaintexts_json2"],
-                                cwd=question_path)
+                print_info(
+                    "* running '" + vmnc + " " + str(RANDOM_SOURCE) + 
+                    " -plain -outi json proofs/PlaintextElements.bt " +
+                    "plaintexts_json2'"
+                )
+                subprocess.call([
+                    vmnc,
+                    RANDOM_SOURCE, 
+                    "-plain",
+                    "-outi",
+                    "json",
+                    "proofs/PlaintextElements.bt",
+                    "plaintexts_json2"],
+                    cwd=question_path
+                )
 
-                path1 = os.path.join(dir_raw_path, question_dir, "plaintexts_json")
-                path2 = os.path.join(dir_raw_path, question_dir, "plaintexts_json2")
+                path1 = os.path.join(
+                    dir_raw_path,
+                    question_dir,
+                    "plaintexts_json"
+                )
+                path2 = os.path.join(
+                    dir_raw_path,
+                    question_dir,
+                    "plaintexts_json2"
+                )
 
                 path1_s = open(path1).read()
                 path2_s = open(path2).read()
@@ -386,13 +470,37 @@ if __name__ == "__main__":
                 print_success("* plaintexts_json verification OK")
 
                 # verify ciphertexts raw conversion
-                print_info("* running '" + vmnc + " " + str(RANDOM_SOURCE) + " -ciphs -ini json ciphertexts_json ciphertexts_raw'")
-                subprocess.call([vmnc, RANDOM_SOURCE, "-ciphs", "-ini", "json",
-                                "ciphertexts_json", "ciphertexts_raw"],
-                                cwd=question_path)
+                print_info(
+                    "* running '" + 
+                    vmnc + 
+                    " " + 
+                    str(RANDOM_SOURCE) + 
+                    " -ciphs -ini json ciphertexts_json ciphertexts_raw'"
+                )
+                subprocess.call(
+                    [
+                        vmnc,
+                        RANDOM_SOURCE,
+                        "-ciphs",
+                        "-ini",
+                        "json",
+                        "ciphertexts_json",
+                        "ciphertexts_raw"
+                    ],
+                    cwd=question_path
+                )
 
-                path1 = os.path.join(dir_raw_path, question_dir, "ciphertexts_raw")
-                path2 = os.path.join(dir_raw_path, question_dir, "proofs", "CiphertextList00.bt")
+                path1 = os.path.join(
+                    dir_raw_path,
+                    question_dir,
+                    "ciphertexts_raw"
+                )
+                path2 = os.path.join(
+                    dir_raw_path,
+                    question_dir,
+                    "proofs",
+                    "CiphertextList00.bt"
+                )
 
                 path1_s = open(path1, "rb").read()
                 path2_s = open(path2, "rb").read()
@@ -404,16 +512,22 @@ if __name__ == "__main__":
                 print_success("* ciphertexts_json verification OK")
 
                 i += 1
-        except Exception as e:
-            print_fail("* tally verification FAILED due to an error processing it:")
+        except Exception as error:
+            print_fail(
+                "* tally verification FAILED due to an error processing it:"
+            )
             traceback.print_exc()
             remove_tmp_dir()
             sys.exit(1)
+    
+    remove_tmp_dir()
 
-        remove_tmp_dir()
-
-    if hash and not hash_found:
-        print_fail("* ERROR: vote hash %s NOT FOUND" % hash)
-        raise Exception()
+    if hash:
+        if not hash_found:
+            print_fail("* ERROR: vote hash %s NOT FOUND" % hash)
+            traceback.print_exc()
+            sys.exit(1)
+        else:
+            print_success("* ballot hash verification OK")
 
     print_success("* ALL verifications succeeded")
