@@ -24,6 +24,7 @@ jobs:
         sudo apt install -y wget sharutils openjdk-8-jdk-headless
         wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
         sudo dpkg -i sbt-0.13.18.deb
+        sudo update-alternatives --set java /usr/lib/jvm/java-1.8.*-openjdk-amd64/bin/java
         java -version
 
     - name: Install internal dependencies
