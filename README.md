@@ -57,7 +57,7 @@ Running
 
 # License
 
-Copyright (C) 2015 Agora Voting SL and/or its subsidiary(-ies).
+Copyright (C) 2015-2021 Agora Voting SL and/or its subsidiary(-ies).
 Contact: legal@agoravoting.com
 
 This file is part of the agora-verifier module of the Agora Voting project.
