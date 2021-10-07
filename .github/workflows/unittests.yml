@@ -20,11 +20,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install external dependencies
       run: |
-        sudo apt-add-repository ppa:webupd8team/java -y
         sudo apt update
-        sudo apt install -y wget sharutils oracle-java8-installer oracle-java8-set-default
+        sudo apt install -y wget sharutils openjdk-8-jdk-headless
         wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
         sudo dpkg -i sbt-0.13.18.deb
+        java -version
 
     - name: Install internal dependencies
       run: |
