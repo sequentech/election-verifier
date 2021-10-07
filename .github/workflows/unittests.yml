@@ -25,7 +25,7 @@ jobs:
         wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
         sudo dpkg -i sbt-0.13.18.deb
         sudo update-alternatives --list java
-        sudo update-alternatives --set java /usr/lib/jvm/java-1.8.*-openjdk-amd64/bin/java
+        sudo update-alternatives --set java /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/java
         java -version
 
     - name: Install internal dependencies
