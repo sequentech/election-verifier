@@ -28,12 +28,13 @@ jobs:
 
     - name: Install internal dependencies
       run: |
+        export INTERNAL_GIT_VERSION="master"
         git clone https://github.com/agoravoting/agora-tally.git
-        cd agora-tally && git checkout ${GITHUB_REF/refs\/head\//} && cd ..
+        cd agora-tally && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
         mv agora-tally/agora_tally .
 
         git clone https://github.com/agoravoting/agora-results.git
-        cd agora-results && git checkout ${GITHUB_REF/refs\/head\//} && cd ..
+        cd agora-results && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
         mv agora-results/ agora-results2
         mv agora-results2/agora_results .
         mv agora-results2/agora-results .
