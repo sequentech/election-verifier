@@ -20,6 +20,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install external dependencies
       run: |
+        export # print vars for debugging
         sudo apt update
         sudo apt install -y openjdk-8-jdk-headless wget sharutils
         wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
