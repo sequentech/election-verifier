@@ -1,0 +1,54 @@
+name: Test the agora-verifier
+
+on:
+  push:
+    branches:
+    - master
+    - '[0-9]+.[0-9]+.x'
+    tags:
+    - '**'
+  pull_request:
+    branches:
+    - master
+    - '[0-9]+.[0-9]+.x'
+
+jobs:
+  py:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install external dependencies
+      run: |
+        apt update
+        apt install -y openjdk-8-jdk-headless wget sharutils
+        wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
+        dpkg -i sbt-0.13.18.deb
+
+    - name: Install internal dependencies
+      run: |
+        git clone https://github.com/agoravoting/agora-tally.git
+        cd agora-tally && git checkout ${GITHUB_REF/refs\/head\//} && cd ..
+        mv agora-tally/agora_tally .
+
+        git clone https://github.com/agoravoting/agora-results.git
+        cd agora-results && git checkout ${GITHUB_REF/refs\/head\//} && cd ..
+        mv agora-results/ agora-results2
+        mv agora-results2/agora_results .
+        mv agora-results2/agora-results .
+        
+    - name: Build the verifier
+      run: |
+        sbt clean proguard:proguard && ./package.sh
+
+    - name: run unittests
+      run: |
+        python3 -m unittest
+
+    - name: run test 2
+      run: |
+        ./agora-verifier ./testdata/12.tar 09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705
+
+    - name: run test 3 - should fail
+      run: |
+        ./agora-verifier ./testdata/12.tar 09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44704; echo $? == 1
