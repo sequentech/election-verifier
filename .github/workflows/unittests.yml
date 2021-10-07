@@ -61,11 +61,3 @@ jobs:
     - name: run unittests
       run: |
         python3 -m unittest
-
-    - name: run test 2
-      run: |
-        ./agora-verifier ./testdata/12.tar 09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705
-
-    - name: run test 3 - should fail
-      run: |
-        ./agora-verifier ./testdata/12.tar 09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44704; echo $? == 1
