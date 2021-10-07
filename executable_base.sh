@@ -53,13 +53,15 @@ if [[ ! -z "$2" ]]
 then
   ballot_locator=$2
   /usr/bin/env python3 verify.py $tally $ballot_locator
+  export EXIT_VALUE=$?
 else
   /usr/bin/env python3 verify.py $tally
+  export EXIT_VALUE=$?
 fi
 
 # remove temporal files normally
 echo "removing temporal directory: $temp_path"
 rm -rf $temp_path
 
-exit 0
+exit $EXIT_VALUE
 
