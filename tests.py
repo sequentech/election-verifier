@@ -37,17 +37,91 @@ def run_command(command, return_code=None, **kwargs):
 
 class TestStringMethods(unittest.TestCase):
     def test_election_12(self):
+        '''
+        Validates the example proofs for election 12.tar
+        '''
         run_command(
             command=["./agora-verifier", "./testdata/12.tar"],
         )
 
     def test_election_invalid_file(self):
+        '''
+        The file is not found so it fails
+        '''
         run_command(
             command=["./agora-verifier", "./testdata/non_existing_tarfile.tar"],
             return_code=1
         )
 
+    def test_election_12_wrong_ballots(self):
+        '''
+        The election proofs fail because the ballots.json file
+        is wrong
+        '''
+        run_command(
+            command=["./agora-verifier", "./testdata/12_wrong_ballots.tar"],
+            return_code=1
+        )
+
+    def test_election_12_wrong_proof_of_shuffle(self):
+        '''
+        The election proofs fail because the proofs of shuffle (file
+        0-78172fa2-42f5-4854-bd2e-5e3015e7e23e/proofs/CCPoSCommitment01.bt)
+        have been tampered with.
+        '''
+        run_command(
+            command=[
+                "./agora-verifier",
+                "./testdata/12_wrong_proof_of_shuffle.tar"
+            ],
+            return_code=1
+        )
+
+    def test_election_12_wrong_proof_of_shuffle_existing_ballot(self):
+        '''
+        The ballot hash locator finds the ballot, because although the 
+        proof of shuffle was tampered with, the ballots.json file was not.
+        '''
+        run_command(
+            command=[
+                "./agora-verifier",
+                "./testdata/12_wrong_proof_of_shuffle.tar",
+                "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705"
+            ]
+        )
+
+    def test_election_12_wrong_proof_of_shuffle_nonexisting_ballot(self):
+        '''
+        The ballot hash locator cannot find the ballot. The proof of shuffle was
+        tampered with, the ballots.json file was not. The tampering does not
+        affect the result in this case because we are only verifying that the
+        ballot and its hash is part of the results.
+        '''
+        run_command(
+            command=[
+                "./agora-verifier",
+                "./testdata/12_wrong_proof_of_shuffle.tar",
+                "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44701"
+            ],
+            return_code=1
+        )
+
+    def test_election_12_wrong_results(self):
+        '''
+        The election proofs fail because the results have been tampered with.
+        '''
+        run_command(
+            command=[
+                "./agora-verifier",
+                "./testdata/12_wrong_results.tar"
+            ],
+            return_code=1
+        )
+
     def test_election_12_existing_ballot(self):
+        '''
+        The ballot is located in the ballots.json file.
+        '''
         run_command(
             command=[
                 "./agora-verifier",
@@ -57,6 +131,10 @@ class TestStringMethods(unittest.TestCase):
         )
 
     def test_election_12_nonexisting_ballots(self):
+        '''
+        The ballot is not located in the ballots.json file, because it's not 
+        there.
+        '''
         run_command(
             command=[
                 "./agora-verifier",
