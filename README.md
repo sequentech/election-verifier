@@ -1,6 +1,6 @@
 # agora-verifier
 
-`agora-verifier` performs universal verification of an electoral process in
+`agora-verifier` performs universal verification of an election tally in
 [nVotes] platform.
 
 The verifications performed are:
@@ -28,9 +28,10 @@ can find an example of some tallies to verify in `testdata/` directory in this
 repository. Note that you need to use a matching software version of
 `agora-verifier` and this tally to make it work.
 
-In the `testdata/` directory, the tally `12.tar` is a valid election tally, and
+In the `testdata/` directory, the file `12.tar` is a valid election tally, and
 all the other tallies contain different kind of invalid errors that would make
-the verifier fail, showing some red color output and return a non-zero value.
+the verifier fail, showing some red color output and returning a non-zero value
+as result.
 
 Finally, to perform recorded-as-cast verification in this testdata, note that a
 valid ballot tracker is
@@ -54,7 +55,7 @@ chmod +x agora-verifier
 ### Performing `recorded-as-cast` verification
 
 You can also verify the inclusion of a ballot tracker with `agora-verifier` in
-the list of encrypted ballots of the electoral tally. This is the so-called
+the list of encrypted ballots of the election tally. This is the so-called
 `recorded-as-cast` verification. Note that the ballot tracker is just a hash of
 the ballot. If the ballot tracker is
 `09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705`, then to
