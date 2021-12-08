@@ -1,13 +1,24 @@
 # agora-verifier
 
-agora-verifier performs the tally and cryptographic verification of the election
-process, including key generation, shuffling and joint-decryption, using the
-[vfork] library. It also verifies the calculation of the election results using
-the [agora-results] and [agora-tally] libraries.
+`agora-verifier` performs universal verification of electoral process in
+[nVotes] platform.
+
+The verifications performed are:
+1. `recorded-as-cast`: Allows anyone to verify the inclusion of an encrypted
+   ballot in the tally.
+2. `counted-as-recorded`: Allows anyone to verify that with the given set of
+   encrypted ballots, the calculated election results are correct. This
+   includes:
+   - The usage of [vfork] library to verify the `Zero Knowledge Proofs` of:
+     - Key Generation
+     - Shuffling
+     - Joint-decryption of the encrypted ballots
+   - The calculation of election results with the resulting plaintext ballots
+     using the [agora-results] and [agora-tally] libraries.
 
 ## Usage
 
-### Verifying a tally
+### Performing `counted-as-recorded` verifications
 
 Once you have the `agora-verifier` binary and a tally to verify, it's simple
 to do. You would need to just run:
@@ -20,7 +31,7 @@ to do. You would need to just run:
 `x86_64` machine. `agora-verifier` is currently untested in other
 configurations.
 
-### Verifying the inclusion of a ballot tracker in a tally
+### Performing `recorded-as-cast` verifications
 
 You can also verify the inclusion of a ballot tracker with `agora-verifier`.
 Note that the ballot tracker is just a hash of the ballot. If the ballot tracker
@@ -31,7 +42,7 @@ perform this verification on the tally `tally.tar.gz` you would do:
 ./agora-verifier tally.tar.gz 9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70
 ```
 
-## Build
+## Building `agora-verifier`
 
 ### Automatic builds
 
@@ -41,7 +52,10 @@ Please note that compilation and installation is already automated in:
   [deployment-guide] for instructions on how to run `agora-dev-box` to deploy
   the whole system.
 - [unit-tests]: automatically compiles and runs `agora-verifier` unittests on
-  github commits and pushes.
+  github commits and pushes. You can directly download the `agora-verifier`
+  binary used and generatedin each run of the 
+  [unit-tests Github Actions Workflow] from the summary page of that workflow
+  run.
 
 For most up-to-date instrucions on how to install, please review the
 [unit-tests] Github Actions workflow.
@@ -108,3 +122,4 @@ This will generate the `agora-verifier` executable.
 [agora-dev-box]: https://github.com/agoravoting/agora-dev-box
 [unit-tests]: https://github.com/agoravoting/agora-verifier/blob/master/.github/workflows/unittests.yml
 [deployment-guide]: https://agoravoting.github.io/admin-manual/docs/deployment/guide/
+[unit-tests Github Actions Workflow]: https://github.com/agoravoting/agora-verifier/actions/workflows/unittests.yml
