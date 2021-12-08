@@ -1,85 +1,110 @@
-agora-verifier
-==============
+# agora-verifier
 
+agora-verifier performs the tally and cryptographic verification of the election
+process, including key generation, shuffling and joint-decryption, using the
+[vfork] library. It also verifies the calculation of the election results using
+the [agora-results] and [agora-tally] libraries.
 
-agora-verifier performs tally and cryptographic verification of the election process, including key generation, shuffling and joint-decryption, using the vfork library.
+## Usage
 
-Requirements
-==============
-You need
+### Verifying a tally
 
-java (version 7)
+Once you have the `agora-verifier` binary and a tally to verify, it's simple
+to do. You would need to just run:
 
-    sudo add-apt-repository ppa:webupd8team/java
-    sudo apt-get update
-    sudo apt-get install oracle-java7-installer
-    sudo apt-get install oracle-java7-set-default
+```bash
+./agora-verifier tally.tar.gz
+```
 
-if you need to revert to java 8 later
+> :warning: **Note**  You need to be running inside `Ubuntu 20.04 LTS` on a
+`x86_64` machine. `agora-verifier` is currently untested in other
+configurations.
 
-    sudo apt-get install oracle-java8-set-default
+### Verifying the inclusion of a ballot tracker in a tally
 
-sbt (version 0.13.7 used here)
+You can also verify the inclusion of a ballot tracker with `agora-verifier`.
+Note that the ballot tracker is just a hash of the ballot. If the ballot tracker
+is `9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70`, then to
+perform this verification on the tally `tally.tar.gz` you would do:
 
-    wget https://dl.bintray.com/sbt/debian/sbt-0.13.7.deb
-    dpkg -i sbt-0.13.7.deb
+```bash
+./agora-verifier tally.tar.gz 9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70
+```
 
-the agora\_tally directory of the agora-tally project
+## Build
 
-    git clone https://github.com/agoravoting/agora-tally.git
-    mv agora-tally/agora_tally .
+### Automatic builds
 
-the agora-results directory of the agora-results directory and the executable python script
+Please note that compilation and installation is already automated in:
+- [agora-dev-box]: Any new [nVotes] platform deployment automatically compiles
+  and ships the `agora-verifier` binary with election results. See
+  [deployment-guide] for instructions on how to run `agora-dev-box` to deploy
+  the whole system.
+- [unit-tests]: automatically compiles and runs `agora-verifier` unittests on
+  github commits and pushes.
 
-    git clone https://github.com/agoravoting/agora-results.git
-    mv agora-results/ agora-results2
-    mv agora-results2/agora_results .
-    mv agora-results2/agora-results .
+For most up-to-date instrucions on how to install, please review the
+[unit-tests] Github Actions workflow.
 
-uuencode
+### Manual Build
 
-    apt-get install sharutils
+To manually build yourself the `agora-verifier`, please follow the instructions
+below. 
 
-Packaging
-==============
-Run
+**1. System requirements**
 
-    sbt clean proguard:proguard
-    ./package.sh
+For these instructions, we will be asuming you are using `Ubuntu 20.04 LTS` on 
+a `x86_64` machine. Deployment has not been tested in any other configuration.
 
-this will generate an executable agora-verifier
+**2. Install dependencies**
 
-Running
-==============
+`agora-verifier` uses openjdk `8` and sbt `0.13.18`, and also the `uuencode` 
+encoding tools. Let's install them:
 
-    ./agora-verifier tally.tar.gz
+```bash
+sudo apt update
+sudo apt install -y wget sharutils openjdk-8-jdk-headless
+wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
+sudo dpkg -i sbt-0.13.18.deb
+sudo update-alternatives --list java
+sudo update-alternatives --set java /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/java
+```
 
+Now we are installing the internal dependencies, i.e. dependencies of
+`agora-verifier` that are also part of [nVotes] platform: [agora-results] and
+[agora-tally]. Please change the `INTERNAL_GIT_VERSION` variable to the
+appropiate version to use in your case.
 
-# License
+> :warning: **Note** that you need to change the `INTERNAL_GIT_VERSION` you
+should be using depending on the version of [nVotes] platform used to run the
+election you want to verify.
 
-Copyright (C) 2015-2021 Agora Voting SL and/or its subsidiary(-ies).
-Contact: legal@agoravoting.com
+export INTERNAL_GIT_VERSION="5.0.0"
+git clone https://github.com/agoravoting/agora-tally.git
+cd agora-tally && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+mv agora-tally/agora_tally .
 
-This file is part of the agora-verifier module of the Agora Voting project.
+git clone https://github.com/agoravoting/agora-results.git
+cd agora-results && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+mv agora-results/ agora-results2
+mv agora-results2/agora_results .
+mv agora-results2/agora-results .
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+**3. Building and packaging**
 
-Commercial License Usage
-Licensees holding valid commercial Agora Voting project licenses may use this
-file in accordance with the commercial license agreement provided with the
-Software or, alternatively, in accordance with the terms contained in
-a written agreement between you and Agora Voting SL. For licensing terms and
-conditions and further information contact us at legal@agoravoting.com .
+To build the Scala code and package all the code together, please run:
 
-GNU Affero General Public License Usage
-Alternatively, this file may be used under the terms of the GNU Affero General
-Public License version 3 as published by the Free Software Foundation and
-appearing in the file LICENSE.AGPL3 included in the packaging of this file, or
-alternatively found in <http://www.gnu.org/licenses/>.
+```bash
+sbt clean proguard:proguard
+./package.sh
+```
 
-External libraries
-This program distributes libraries from external sources. If you follow the
-compilation process you'll download these libraries and their respective
-licenses, which are compatible with our licensing.
+This will generate the `agora-verifier` executable.
+
+[nVotes]: https://nvotes.com
+[vfork]: https://github.com/agoravoting/vfork
+[agora-results]: https://github.com/agoravoting/agora-results
+[agora-tally]: https://github.com/agoravoting/agora-tally
+[agora-dev-box]: https://github.com/agoravoting/agora-dev-box
+[unit-tests]: https://github.com/agoravoting/agora-verifier/blob/master/.github/workflows/unittests.yml
+[deployment-guide]: https://agoravoting.github.io/admin-manual/docs/deployment/guide/
