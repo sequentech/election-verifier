@@ -104,6 +104,7 @@ using depending on the version of [nVotes] platform used to run the election you
 want to verify. In this example, we're using version `5.0.0` of [nVotes] 
 platform.
 
+```bash
 export INTERNAL_GIT_VERSION="5.0.0"
 git clone https://github.com/agoravoting/agora-verifier.git
 cd agora-verifier
@@ -118,6 +119,7 @@ cd agora-results && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
 mv agora-results/ agora-results2
 mv agora-results2/agora_results .
 mv agora-results2/agora-results .
+```
 
 **3. Building and packaging**
 
