@@ -1,6 +1,6 @@
 # agora-verifier
 
-`agora-verifier` performs universal verification of electoral process in
+`agora-verifier` performs universal verification of an electoral process in
 [nVotes] platform.
 
 The verifications performed are:
@@ -13,32 +13,43 @@ The verifications performed are:
      - Key Generation
      - Shuffling
      - Joint-decryption of the encrypted ballots
-   - The calculation of election results with the resulting plaintext ballots
-     using the [agora-results] and [agora-tally] libraries.
+   - The calculation of election results from the plaintext ballots verified in
+     the previous Joint-decryption verification step, using the [agora-results]
+     and [agora-tally] libraries.
 
 ## Usage
 
-### Performing `counted-as-recorded` verifications
+> :warning: **Note** You need to be running inside an `Ubuntu 20.04 LTS`
+operative system on a `x86_64` machine. You also need to have `openjdk` version
+8 installed. `agora-verifier` is currently untested in other system
+configurations.
 
-Once you have the `agora-verifier` binary and a tally to verify, it's simple
-to do. You would need to just run:
+### Performing `counted-as-recorded` verification
+
+Once you have the `agora-verifier` binary and a tally to verify, you can perform
+`counted-as-recorded` verification of the tally by running the following 
+command:
 
 ```bash
+chmod +x agora-verifier
 ./agora-verifier tally.tar.gz
 ```
 
-> :warning: **Note**  You need to be running inside `Ubuntu 20.04 LTS` on a
-`x86_64` machine. `agora-verifier` is currently untested in other
-configurations.
+> :warning: Always execute `agora-verifier` with a path to the tally file that
+is in the same directory as the `agora-verifier` binary.
 
-### Performing `recorded-as-cast` verifications
+### Performing `recorded-as-cast` verification
 
-You can also verify the inclusion of a ballot tracker with `agora-verifier`.
-Note that the ballot tracker is just a hash of the ballot. If the ballot tracker
-is `9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70`, then to
-perform this verification on the tally `tally.tar.gz` you would do:
+You can also verify the inclusion of a ballot tracker with `agora-verifier` in
+the list of encrypted ballots of the electoral tally. This is the so-called
+`recorded-as-cast` verification. Note that the ballot tracker is just a hash of
+the ballot. If the ballot tracker is
+`9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70`, then to
+perform this verification on the tally `tally.tar.gz` you would run the
+following command:
 
 ```bash
+chmod +x agora-verifier
 ./agora-verifier tally.tar.gz 9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70
 ```
 
@@ -46,34 +57,33 @@ perform this verification on the tally `tally.tar.gz` you would do:
 
 ### Automatic builds
 
-Please note that compilation and installation is already automated in:
+Compilation and installation of `agora-verifier` is already automated in:
 - [agora-dev-box]: Any new [nVotes] platform deployment automatically compiles
-  and ships the `agora-verifier` binary with election results. See
-  [deployment-guide] for instructions on how to run `agora-dev-box` to deploy
-  the whole system.
-- [unit-tests]: automatically compiles and runs `agora-verifier` unittests on
-  github commits and pushes. You can directly download the `agora-verifier`
-  binary used and generatedin each run of the 
+  and ships the `agora-verifier` binary with election results, showing voters a
+  link to download `agora-verifier` in the public election page once the
+  election results are published. See [deployment-guide] for instructions on how
+  to run `agora-dev-box` to deploy the whole system.
+- [unit-tests]: `agora-verifier` CI pipeline automatically compiles and runs
+  `agora-verifier` unittests on github. You can directly download the
+  `agora-verifier` binary used and generated in each run of the 
   [unit-tests Github Actions Workflow] from the summary page of that workflow
   run.
 
-For most up-to-date instrucions on how to install, please review the
-[unit-tests] Github Actions workflow.
-
 ### Manual Build
 
-To manually build yourself the `agora-verifier`, please follow the instructions
-below. 
+To manually build yourself the `agora-verifier` executable, please follow the
+instructions below.
 
 **1. System requirements**
 
-For these instructions, we will be asuming you are using `Ubuntu 20.04 LTS` on 
-a `x86_64` machine. Deployment has not been tested in any other configuration.
+For these instructions, we will be asuming you are using `Ubuntu 20.04 LTS` on a
+`x86_64` machine. Deployment has not been tested in any other system
+configuration.
 
 **2. Install dependencies**
 
-`agora-verifier` uses openjdk `8` and sbt `0.13.18`, and also the `uuencode` 
-encoding tools. Let's install them:
+`agora-verifier` uses openjdk `8`, sbt `0.13.18`, and also the `uuencode` 
+encoding tools. Let's install them first:
 
 ```bash
 sudo apt update
@@ -84,16 +94,21 @@ sudo update-alternatives --list java
 sudo update-alternatives --set java /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/java
 ```
 
-Now we are installing the internal dependencies, i.e. dependencies of
+Next, we will be installing the internal dependencies, i.e. dependencies of
 `agora-verifier` that are also part of [nVotes] platform: [agora-results] and
 [agora-tally]. Please change the `INTERNAL_GIT_VERSION` variable to the
 appropiate version to use in your case.
 
-> :warning: **Note** that you need to change the `INTERNAL_GIT_VERSION` you
-should be using depending on the version of [nVotes] platform used to run the
-election you want to verify.
+> :warning: **Note** You need to change the `INTERNAL_GIT_VERSION` you should be
+using depending on the version of [nVotes] platform used to run the election you
+want to verify. In this example, we're using version `5.0.0` of [nVotes] 
+platform.
 
 export INTERNAL_GIT_VERSION="5.0.0"
+git clone https://github.com/agoravoting/agora-verifier.git
+cd agora-verifier
+git checkout "${INTERNAL_GIT_VERSION}"
+
 git clone https://github.com/agoravoting/agora-tally.git
 cd agora-tally && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
 mv agora-tally/agora_tally .
@@ -106,14 +121,16 @@ mv agora-results2/agora-results .
 
 **3. Building and packaging**
 
-To build the Scala code and package all the code together, please run:
+To compile and package the `agora-verifier` binary, please run:
 
 ```bash
 sbt clean proguard:proguard
 ./package.sh
+chmod +x agora-verifier
 ```
 
-This will generate the `agora-verifier` executable.
+This will generate the `agora-verifier` executable in the current working
+directory.
 
 [nVotes]: https://nvotes.com
 [vfork]: https://github.com/agoravoting/vfork
