@@ -19,10 +19,22 @@ The verifications performed are:
 
 ## Usage
 
-> :warning: **Note** You need to be running inside an `Ubuntu 20.04 LTS`
-operative system on a `x86_64` machine. You also need to have `openjdk` version
-8 installed. `agora-verifier` is currently untested in other system
-configurations.
+You need to be running inside an `Ubuntu 20.04 LTS` operative system on a
+`x86_64` machine. You also need to have `openjdk` version 8 installed.
+`agora-verifier` is currently untested in other system configurations.
+
+If you don't have a tally to verify but you want to test `agora-verifier`, you
+can find an example of some tallies to verify in `testdata/` directory in this
+repository. Note that you need to use a matching software version of
+`agora-verifier` and this tally to make it work.
+
+In the `testdata/` directory, the tally `12.tar` is a valid election tally, and
+all the other tallies contain different kind of invalid errors that would make
+the verifier fail, showing some red color output and return a non-zero value.
+
+Finally, to perform recorded-as-cast verification in this testdata, note that a
+valid ballot tracker is
+`09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705`.
 
 ### Performing `counted-as-recorded` verification
 
@@ -32,11 +44,12 @@ command:
 
 ```bash
 chmod +x agora-verifier
-./agora-verifier tally.tar.gz
+# Execute by using ./agora-verifier <path-to-tally.tar>
+./agora-verifier testdata/12.tar 
 ```
 
-> :warning: Always execute `agora-verifier` with a path to the tally file that
-is in the same directory as the `agora-verifier` binary.
+**Tip:** You can use one of the invalid testdata tallies and see how
+`agora-verifier` fails on different kind of tally verifications. 
 
 ### Performing `recorded-as-cast` verification
 
@@ -44,14 +57,18 @@ You can also verify the inclusion of a ballot tracker with `agora-verifier` in
 the list of encrypted ballots of the electoral tally. This is the so-called
 `recorded-as-cast` verification. Note that the ballot tracker is just a hash of
 the ballot. If the ballot tracker is
-`9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70`, then to
-perform this verification on the tally `tally.tar.gz` you would run the
+`09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705`, then to
+perform this verification on the tally `tally.tar` you would run the
 following command:
 
 ```bash
 chmod +x agora-verifier
-./agora-verifier tally.tar.gz 9cfd2cedc12d7cf9ec7dcdae041ad6faaf0d52931c886b615b3075dc7f013d70
+# Execute by using ./agora-verifier <path-to-tally.tar> <ballot-tracker>
+./agora-verifier testdata/12.tar 09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705
 ```
+
+**Tip:** You can try to make up an invalid ballot-tracker to see that
+`agora-verifier` does not find it in the tally and fails.
 
 ## Building `agora-verifier`
 
@@ -86,12 +103,12 @@ configuration.
 encoding tools. Let's install them first:
 
 ```bash
-sudo apt update
-sudo apt install -y wget sharutils openjdk-8-jdk-headless
-wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
-sudo dpkg -i sbt-0.13.18.deb
-sudo update-alternatives --list java
-sudo update-alternatives --set java /usr/lib/jvm/adoptopenjdk-8-hotspot-amd64/bin/java
+sudo apt update && \
+sudo apt install -y wget sharutils openjdk-8-jdk-headless && \
+wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb && \
+sudo dpkg -i sbt-0.13.18.deb && \
+sudo update-alternatives --list java && \
+sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
 ```
 
 Next, we will be installing the internal dependencies, i.e. dependencies of
@@ -131,7 +148,11 @@ sbt clean proguard:proguard
 ```
 
 This will generate the `agora-verifier` executable in the current working
-directory.
+directory. You can see it's working by running:
+
+```bash
+./agora-verifier testdata/12.tar
+```
 
 [nVotes]: https://nvotes.com
 [vfork]: https://github.com/agoravoting/vfork
