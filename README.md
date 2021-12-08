@@ -126,7 +126,6 @@ To compile and package the `agora-verifier` binary, please run:
 ```bash
 sbt clean proguard:proguard
 ./package.sh
-chmod +x agora-verifier
 ```
 
 This will generate the `agora-verifier` executable in the current working
