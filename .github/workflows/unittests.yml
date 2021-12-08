@@ -61,3 +61,8 @@ jobs:
     - name: run unittests
       run: |
         python3 -m unittest
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: agora-verifier-binary
+        path: ./agora-verifier
