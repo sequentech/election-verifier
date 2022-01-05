@@ -19,7 +19,7 @@ rm -r -f dist
 mkdir dist
 cp -r agora_tally dist
 cp -r agora_results dist
-cp target/scala-2.10/proguard/agora-verifier_2.10-5.0.2.jar dist
+cp target/scala-2.10/proguard/agora-verifier_2.10-5.0.3.jar dist
 cp pverify.sh dist
 cp vmnc.sh dist
 cp verify.py dist
