@@ -19,4 +19,4 @@ command -v java >/dev/null 2>&1 || { echo >&2 "* I require java but it's not ins
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-java -Djava.security.egd=file:/dev/./urandom -classpath $DIR/agora-verifier_2.10-5.0.6.jar org.agoravoting.agora.Vmnc "$@"
+java -Djava.security.egd=file:/dev/./urandom -classpath $DIR/agora-verifier_2.10-5.0.7.jar org.agoravoting.agora.Vmnc "$@"
