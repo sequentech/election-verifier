@@ -30,7 +30,7 @@ jobs:
 
     - name: Install internal dependencies
       run: |
-        export INTERNAL_GIT_VERSION="5.0.8"
+        export INTERNAL_GIT_VERSION="5.0.9"
         git clone https://github.com/agoravoting/agora-tally.git
         cd agora-tally && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
         mv agora-tally/agora_tally .
