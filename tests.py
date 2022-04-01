@@ -1,19 +1,19 @@
 # -*- coding:utf-8 -*-
 
-# This file is part of agora-results.
-# Copyright (C) 2017-2021  Agora Voting SL <agora@agoravoting.com>
+# This file is part of tally-pipes.
+# Copyright (C) 2017-2021  Sequent Tech Inc <legal@sequentech.io>
 
-# agora-results is free software: you can redistribute it and/or modify
+# tally-pipes is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License.
 
-# agora-results  is distributed in the hope that it will be useful,
+# tally-pipes  is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
 # You should have received a copy of the GNU Affero General Public License
-# along with agora-results.  If not, see <http://www.gnu.org/licenses/>.
+# along with tally-pipes.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 import subprocess
@@ -41,7 +41,7 @@ class TestStringMethods(unittest.TestCase):
         Validates the example proofs for election 12.tar
         '''
         run_command(
-            command=["./agora-verifier", "./testdata/12.tar"],
+            command=["./election-verifier", "./testdata/12.tar"],
         )
 
     def test_election_invalid_file(self):
@@ -49,7 +49,7 @@ class TestStringMethods(unittest.TestCase):
         The file is not found so it fails
         '''
         run_command(
-            command=["./agora-verifier", "./testdata/non_existing_tarfile.tar"],
+            command=["./election-verifier", "./testdata/non_existing_tarfile.tar"],
             return_code=1
         )
 
@@ -59,7 +59,7 @@ class TestStringMethods(unittest.TestCase):
         is wrong
         '''
         run_command(
-            command=["./agora-verifier", "./testdata/12_wrong_ballots.tar"],
+            command=["./election-verifier", "./testdata/12_wrong_ballots.tar"],
             return_code=1
         )
 
@@ -71,7 +71,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12_wrong_proof_of_shuffle.tar"
             ],
             return_code=1
@@ -84,7 +84,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12_wrong_proof_of_shuffle.tar",
                 "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705"
             ]
@@ -99,7 +99,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12_wrong_proof_of_shuffle.tar",
                 "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44701"
             ],
@@ -112,7 +112,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12_wrong_results.tar"
             ],
             return_code=1
@@ -124,7 +124,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12.tar",
                 "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705"
             ],
@@ -137,7 +137,7 @@ class TestStringMethods(unittest.TestCase):
         '''
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12.tar",
                 "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44704"
             ],
@@ -145,7 +145,7 @@ class TestStringMethods(unittest.TestCase):
         )
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12.tar",
                 "deadbeef"
             ],
@@ -153,7 +153,7 @@ class TestStringMethods(unittest.TestCase):
         )
         run_command(
             command=[
-                "./agora-verifier",
+                "./election-verifier",
                 "./testdata/12.tar",
                 "whatever"
             ],

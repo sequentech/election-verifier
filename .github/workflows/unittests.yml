@@ -1,4 +1,4 @@
-name: Test the agora-verifier
+name: Test the election-verifier
 
 on:
   push:
@@ -31,15 +31,15 @@ jobs:
     - name: Install internal dependencies
       run: |
         export INTERNAL_GIT_VERSION="master"
-        git clone https://github.com/agoravoting/agora-tally.git
-        cd agora-tally && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
-        mv agora-tally/agora_tally .
+        git clone https://github.com/sequentech/tally-methods.git
+        cd tally-methods && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+        mv tally-methods/tally_methods .
 
-        git clone https://github.com/agoravoting/agora-results.git
-        cd agora-results && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
-        mv agora-results/ agora-results2
-        mv agora-results2/agora_results .
-        mv agora-results2/agora-results .
+        git clone https://github.com/sequentech/tally-pipes.git
+        cd tally-pipes && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+        mv tally-pipes/ tally-pipes2
+        mv tally-pipes2/tally_pipes .
+        mv tally-pipes2/tally-pipes .
 
     # This is for caching purposes, just following the steps in 
     # https://www.scala-sbt.org/1.x/docs/GitHub-Actions-with-sbt.html
@@ -64,5 +64,5 @@ jobs:
 
     - uses: actions/upload-artifact@v2
       with:
-        name: agora-verifier-binary
-        path: ./agora-verifier
+        name: election-verifier-binary
+        path: ./election-verifier

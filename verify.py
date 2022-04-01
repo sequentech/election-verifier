@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
 
-# This file is part of agora-verifier.
-# Copyright (C) 2015-2021  Agora Voting SL <agora@agoravoting.com>
+# This file is part of election-verifier.
+# Copyright (C) 2015-2021  Sequent Tech Inc <legal@sequentech.io>
 
-# agora-verifier is free software: you can redistribute it and/or modify
+# election-verifier is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License.
 
-# agora-verifier  is distributed in the hope that it will be useful,
+# election-verifier  is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 
 # You should have received a copy of the GNU Lesser General Public License
-# along with agora-verifier.  If not, see <http://www.gnu.org/licenses/>.
+# along with election-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
-from agora_tally import tally as agora_tally
+from tally_methods import tally as tally_methods
 import sys
 import os
 import signal
@@ -300,7 +300,7 @@ if __name__ == "__main__":
     ]
     tallies.sort(key=lambda x: int(x.split('.')[0]))
 
-    # first extract tallies in order to run agora-results
+    # first extract tallies in order to run tally-pipes
     for current_tally in tallies:
         number = int(current_tally.split('.')[0])
         tally_raw_gz = tarfile.open(
@@ -334,7 +334,7 @@ if __name__ == "__main__":
     # results hash two
     results_config_path = os.path.join(dir_path, 'config.json')
     tally_list = [os.path.join(dir_path, tally) for tally in tallies]
-    command = ['./agora-results', '-t']
+    command = ['./tally-pipes', '-t']
     command.extend(tally_list)
     command.extend(['-c', results_config_path, '-s', '-o', 'json'])
     print_info('* running %s ' % command)
