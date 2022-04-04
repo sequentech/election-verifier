@@ -155,6 +155,13 @@ directory. You can see it's working by running:
 ./election-verifier testdata/12.tar
 ```
 
+**4. Notes on `lib/mixnet.jar`**
+
+This library depends on `mixnet.jar`, which for simplicity is currently
+included directly in the git repository. You can build this file from the
+[mixnet] repository and copy it back to `lib/mixnet.jar` before executing
+the build.
+
 [Sequent]: https://sequentech.io
 [mixnet]: https://github.com/sequentech/mixnet
 [tally-pipes]: https://github.com/sequentech/tally-pipes
