@@ -1,19 +1,19 @@
 #!/bin/sh
 
-# This file is part of agora-verifier.
-# Copyright (C) 2015-2016  Agora Voting SL <agora@agoravoting.com>
+# This file is part of election-verifier.
+# Copyright (C) 2015-2016  Sequent Tech Inc <legal@sequentech.io>
 
-# agora-verifier is free software: you can redistribute it and/or modify
+# election-verifier is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License.
 
-# agora-verifier  is distributed in the hope that it will be useful,
+# election-verifier  is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 
 # You should have received a copy of the GNU Lesser General Public License
-# along with agora-verifier.  If not, see <http://www.gnu.org/licenses/>.
+# along with election-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
 dir=`dirname $0`;
 if [ x$dir = "x." ]
@@ -24,9 +24,9 @@ base=`basename $0`;
 path=$(mktemp -d)
 tally=$(echo $(dirname $(readlink -e $1))/$(basename $1))
 
-(cd $path; uudecode -o /dev/stdout $dir/$base | tar zxf -; cd $path/agora-verifier/; /usr/bin/env python3 verify.py $tally $2; rm -rf $path)
+(cd $path; uudecode -o /dev/stdout $dir/$base | tar zxf -; cd $path/election-verifier/; /usr/bin/env python3 verify.py $tally $2; rm -rf $path)
 exit 0;
-begin 644 agora-verifier.tar.gz
+begin 644 election-verifier.tar.gz
 M'XL(`$;$ZU0``^R]!5R53;<WO!&D$:4;!*2[&^GN;NGN;@$!:6GI$A"1;I!0
 ME.YNI+N[OVL;]^U=SWG/>Y[S?N_W^\[`[+EFUG]FUJQ9L]::O;>B;VKKH$_K
 M8NQ@;F)N[$`/^N](#$!B9V7]5@+IS^6W9T8F%G8F=A8F1@8V$`-086,&$;'^

@@ -2,10 +2,10 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
     <groupId>default</groupId>
-    <artifactId>agora-verifier_2.10</artifactId>
+    <artifactId>election-verifier_2.10</artifactId>
     <packaging>jar</packaging>
-    <description>agora-verifier</description>
-    <url>https://github.com/agoravoting/agora-verifier</url>
+    <description>election-verifier</description>
+    <url>https://github.com/sequentech/election-verifier</url>
     <version>20.2.0</version>
     <licenses>
         <license>
@@ -14,11 +14,11 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <name>agora-verifier</name>
+    <name>election-verifier</name>
     <inceptionYear>2015</inceptionYear>
     <organization>
-        <name>Agora Voting SL</name>
-        <url>https://nvotes.com</url>
+        <name>Sequent Tech Inc</name>
+        <url>https://sequentech.io</url>
     </organization>
     <dependencies>
         <dependency>

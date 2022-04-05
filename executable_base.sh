@@ -30,7 +30,7 @@ then
   exit 1
 fi
 
-# absolute path to the agora-verifier binary
+# absolute path to the election-verifier binary
 binary_path=$(get_realpath $0)
 
 # create a temporal directory, and be sure to remove it on termination
@@ -45,7 +45,7 @@ tally=$(get_realpath $1)
 cd $temp_path
 uudecode -o /dev/stdout $binary_path | tar zxf -
 
-cd $temp_path/agora-verifier/
+cd $temp_path/election-verifier/
 
 # if ballot locator is provided, then use it, else launch verify script without
 # ballot locator
