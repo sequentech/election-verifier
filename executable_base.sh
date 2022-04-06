@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o errexit -o errtrace
+trap 'echo >&2 "Error - exited with status $? at line $LINENO' ERR
+
 # portable realpath
 #
 # https://github.com/AsymLabs/realpath-lib

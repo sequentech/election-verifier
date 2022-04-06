@@ -20,6 +20,9 @@ if [ "$#" -ne 2 ] || ! [ -d "$2" ]; then
   exit 1
 fi
 
+set -o errexit -o errtrace
+trap 'echo >&2 "Error - exited with status $? at line $LINENO' ERR
+
 command -v java >/dev/null 2>&1 || { echo >&2 "* I require java but it's not installed.  Aborting."; exit 1; }
 
 java -Djava.security.egd=file:/dev/./urandom -classpath election-verifier_2.10-master.jar org.sequent.sequent.Verifier $1 $2

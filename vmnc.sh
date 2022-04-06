@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with election-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
+set -o errexit -o errtrace
+trap 'echo >&2 "Error - exited with status $? at line $LINENO' ERR
+
 command -v java >/dev/null 2>&1 || { echo >&2 "* I require java but it's not installed.  Aborting."; exit 1; }
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

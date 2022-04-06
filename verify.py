@@ -338,7 +338,13 @@ if __name__ == "__main__":
     command.extend(tally_list)
     command.extend(['-c', results_config_path, '-s', '-o', 'json'])
     print_info('* running %s ' % command)
-    ret = subprocess.check_output(command)
+    try:
+        ret = subprocess.check_output(command)
+    except Exception as e:
+        print_fail(f"Error processing file {results_config_path}. Content:")
+        results_config_str = open(results_config_path).read()
+        print_fail(results_config_str)
+        raise e
     tallyfile_json2 = json.loads(ret.decode(encoding='UTF-8'))
     hashtwo = hash_f(ret).hexdigest()
 

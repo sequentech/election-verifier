@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with election-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
+set -o errexit -o errtrace
+trap 'echo >&2 "Error - exited with status $? at line $LINENO' ERR
+
 rm -r -f dist
 mkdir dist
 cp -r tally_methods dist
