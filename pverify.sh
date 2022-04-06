@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This file is part of election-verifier.
 # Copyright (C) 2015-2016  Sequent Tech Inc <legal@sequentech.io>
@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with election-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
+
 if [ "$#" -ne 2 ] || ! [ -d "$2" ]; then
   echo "Usage: $0 <random_source> <tally_dir>" >&2
   exit 1
@@ -22,6 +23,7 @@ fi
 
 set -o errexit -o errtrace
 trap 'echo >&2 "Error - exited with status $? at line $LINENO' ERR
+
 
 command -v java >/dev/null 2>&1 || { echo >&2 "* I require java but it's not installed.  Aborting."; exit 1; }
 

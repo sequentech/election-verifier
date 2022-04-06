@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This file is part of election-verifier.
 # Copyright (C) 2015-2016  Sequent Tech Inc <legal@sequentech.io>
