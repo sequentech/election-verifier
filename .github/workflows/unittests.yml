@@ -33,7 +33,7 @@ jobs:
       run: |
         set -e
         export INTERNAL_TALLY_METHODS_GIT_VERSION="master"
-        export INTERNAL_TALLY_PIPES_GIT_VERSION="report-error-json"
+        export INTERNAL_TALLY_PIPES_GIT_VERSION="master"
 
         git clone https://github.com/sequentech/tally-methods.git
         cd tally-methods && git checkout "${INTERNAL_TALLY_METHODS_GIT_VERSION}" && git log -1 && cd ..
