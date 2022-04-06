@@ -20,6 +20,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install external dependencies
       run: |
+        set -e
         sudo apt update
         sudo apt install -y wget sharutils openjdk-8-jdk-headless
         wget https://scala.jfrog.io/artifactory/debian/sbt-0.13.18.deb
@@ -30,13 +31,19 @@ jobs:
 
     - name: Install internal dependencies
       run: |
-        export INTERNAL_GIT_VERSION="master"
+        set -e
+        export INTERNAL_TALLY_METHODS_GIT_VERSION="master"
+        export INTERNAL_TALLY_PIPES_GIT_VERSION="report-error-json"
+
         git clone https://github.com/sequentech/tally-methods.git
-        cd tally-methods && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+        cd tally-methods && git checkout "${INTERNAL_TALLY_METHODS_GIT_VERSION}" && git log -1 && cd ..
         mv tally-methods/tally_methods .
 
         git clone https://github.com/sequentech/tally-pipes.git
-        cd tally-pipes && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
+        cd tally-pipes
+        git checkout "${INTERNAL_TALLY_PIPES_GIT_VERSION}"
+        git log -1
+        cd ..
         mv tally-pipes/ tally-pipes2
         mv tally-pipes2/tally_pipes .
         mv tally-pipes2/tally-pipes .
