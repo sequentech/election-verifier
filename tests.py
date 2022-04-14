@@ -36,12 +36,12 @@ def run_command(command, return_code=None, **kwargs):
             raise error
 
 class TestStringMethods(unittest.TestCase):
-    def test_election_12(self):
+    def test_election_8(self):
         '''
-        Validates the example proofs for election 12.tar
+        Validates the example proofs for election 8.tar
         '''
         run_command(
-            command=["./election-verifier", "./testdata/12.tar"],
+            command=["./election-verifier", "./testdata/8.tar"],
         )
 
     def test_election_invalid_file(self):
@@ -53,31 +53,31 @@ class TestStringMethods(unittest.TestCase):
             return_code=1
         )
 
-    def test_election_12_wrong_ballots(self):
+    def test_election_8_wrong_ballots(self):
         '''
         The election proofs fail because the ballots.json file
         is wrong
         '''
         run_command(
-            command=["./election-verifier", "./testdata/12_wrong_ballots.tar"],
+            command=["./election-verifier", "./testdata/8_wrong_ballots.tar"],
             return_code=1
         )
 
-    def test_election_12_wrong_proof_of_shuffle(self):
+    def test_election_8_wrong_proof_of_shuffle(self):
         '''
         The election proofs fail because the proofs of shuffle (file
-        0-78172fa2-42f5-4854-bd2e-5e3015e7e23e/proofs/CCPoSCommitment01.bt)
+        0-78b10d61-d525-4aca-998f-cad2f200a1bf/proofs/CCPoSCommitment01.bt)
         have been tampered with.
         '''
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12_wrong_proof_of_shuffle.tar"
+                "./testdata/8_wrong_proof_of_shuffle.tar"
             ],
             return_code=1
         )
 
-    def test_election_12_wrong_proof_of_shuffle_existing_ballot(self):
+    def test_election_8_wrong_proof_of_shuffle_existing_ballot(self):
         '''
         The ballot hash locator finds the ballot, because although the 
         proof of shuffle was tampered with, the ballots.json file was not.
@@ -85,12 +85,12 @@ class TestStringMethods(unittest.TestCase):
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12_wrong_proof_of_shuffle.tar",
-                "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705"
+                "./testdata/8_wrong_proof_of_shuffle.tar",
+                "ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6"
             ]
         )
 
-    def test_election_12_wrong_proof_of_shuffle_nonexisting_ballot(self):
+    def test_election_8_wrong_proof_of_shuffle_nonexisting_ballot(self):
         '''
         The ballot hash locator cannot find the ballot. The proof of shuffle was
         tampered with, the ballots.json file was not. The tampering does not
@@ -100,37 +100,37 @@ class TestStringMethods(unittest.TestCase):
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12_wrong_proof_of_shuffle.tar",
-                "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44701"
+                "./testdata/8_wrong_proof_of_shuffle.tar",
+                "ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e5"
             ],
             return_code=1
         )
 
-    def test_election_12_wrong_results(self):
+    def test_election_8_wrong_results(self):
         '''
         The election proofs fail because the results have been tampered with.
         '''
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12_wrong_results.tar"
+                "./testdata/8_wrong_results.tar"
             ],
             return_code=1
         )
 
-    def test_election_12_existing_ballot(self):
+    def test_election_8_existing_ballot(self):
         '''
         The ballot is located in the ballots.json file.
         '''
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12.tar",
-                "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44705"
+                "./testdata/8.tar",
+                "ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6"
             ],
         )
 
-    def test_election_12_nonexisting_ballots(self):
+    def test_election_8_nonexisting_ballots(self):
         '''
         The ballot is not located in the ballots.json file, because it's not 
         there.
@@ -138,7 +138,7 @@ class TestStringMethods(unittest.TestCase):
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12.tar",
+                "./testdata/8.tar",
                 "09684d8abd01c2227432bc6302e669fac4e4b3e7251f24c4a9c938683fa44704"
             ],
             return_code=1
@@ -146,7 +146,7 @@ class TestStringMethods(unittest.TestCase):
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12.tar",
+                "./testdata/8.tar",
                 "deadbeef"
             ],
             return_code=1
@@ -154,7 +154,7 @@ class TestStringMethods(unittest.TestCase):
         run_command(
             command=[
                 "./election-verifier",
-                "./testdata/12.tar",
+                "./testdata/8.tar",
                 "whatever"
             ],
             return_code=1
