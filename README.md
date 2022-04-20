@@ -1,5 +1,7 @@
 # election-verifier
 
+https://user-images.githubusercontent.com/81968/164185978-953b72b6-3faa-4cad-a93b-879fe191e9b6.mov
+
 `election-verifier` performs universal verification of an election tally in
 [Sequent] platform.
 
@@ -9,11 +11,12 @@ The verifications performed are:
 2. `counted-as-recorded`: Allows anyone to verify that with the given set of
    encrypted ballots, the calculated election results are correct. This
    includes:
-   - The usage of [mixnet] library to verify the `Zero Knowledge Proofs` of:
-     - Key Generation
-     - Shuffling
-     - Joint-decryption of the encrypted ballots
-   - The calculation of election results from the plaintext ballots verified in
+   1. The usage of [mixnet] library to verify the `Zero Knowledge Proofs` of:
+      1. Key Generation
+      1. Ballot Shuffling
+      1. Ballot Re-encryption
+      1. Joint-decryption of the encrypted ballots
+   1. The calculation of election results from the plaintext ballots verified in
      the previous Joint-decryption verification step, using the [tally-pipes]
      and [tally-methods] libraries.
 
@@ -45,8 +48,8 @@ command:
 
 ```bash
 chmod +x election-verifier
-# Execute by using ./election-verifier <path-to-tally.tar>
-./election-verifier testdata/8.tar 
+# Execute by using bash ./election-verifier <path-to-tally.tar>
+bash ./election-verifier testdata/8.tar 
 ```
 
 **Tip:** You can use one of the invalid testdata tallies and see how
@@ -64,8 +67,8 @@ following command:
 
 ```bash
 chmod +x election-verifier
-# Execute by using ./election-verifier <path-to-tally.tar> <ballot-tracker>
-./election-verifier testdata/8.tar ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6
+# Execute by using bash ./election-verifier <path-to-tally.tar> <ballot-tracker>
+bash ./election-verifier testdata/8.tar ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6
 ```
 
 **Tip:** You can try to make up an invalid ballot-tracker to see that
@@ -152,7 +155,7 @@ This will generate the `election-verifier` executable in the current working
 directory. You can see it's working by running:
 
 ```bash
-./election-verifier testdata/8.tar
+bash ./election-verifier testdata/8.tar
 ```
 
 **4. Notes on `lib/mixnet.jar`**
