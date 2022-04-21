@@ -141,13 +141,13 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     #   commitment * (alpha) ^ challenge
     assert first_part == second_part
 
-def verify_votes_pok(pubkeys, dir_path, tally, hash):
+def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
     num_invalid_votes = 0
     linenum = 0
     ciphertexts_path = os.path.join(dir_path, 'ciphertexts_json')
 
     with open(ciphertexts_path, mode='r') as votes_file:
-        num_questions = len(tally['questions'])
+        num_questions = len(questions_json)
         # we will write the ciphertexts for each question in here
         outvotes_files = []
         list_dir = os.listdir(dir_path)
@@ -161,10 +161,6 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             outvotes_files.append(open(outvotes_path, 'w'))
 
         for i in range(num_questions):
-            # (DISABLED FEATURE) if it's a duplicated question, do not verify it
-            # TODO: verify it's a duplicated question
-            #if "source_question_index" in tally['questions'][i]:
-                #continue
             pubkeys[i]['g'] = int(pubkeys[i]['g'])
             pubkeys[i]['p'] = int(pubkeys[i]['p'])
 
@@ -194,10 +190,6 @@ def verify_votes_pok(pubkeys, dir_path, tally, hash):
             if not hash or (hash is not None and found):
                 try:
                     for i in range(num_questions):
-                        # (DISABLED FEATURE) if it's a duplicated question, do not verify it
-                        # TODO: verify it's a duplicated question
-                        #if "source_question_index" in tally['questions'][i]:
-                            #continue
                         verify_pok_plaintext(
                             pubkeys[i],
                             vote['proofs'][i],
@@ -366,15 +358,38 @@ if __name__ == "__main__":
             ]
         )
 
-        pubkeys_path = os.path.join(dir_raw_path, "pubkeys_json")
-        pubkeys = json.loads(open(pubkeys_path).read())
-
-        print_info("* verifying proofs of knowledge of the plaintexts...")
         try:
+            pubkeys_path = os.path.join(dir_raw_path, "pubkeys_json")
+            if not os.path.exists(pubkeys_path):
+                list_dir1 = os.listdir(dir_raw_path)
+                list_dir1.sort()
+                for question_dir in list_dir1:
+                    question_path = os.path.join(dir_raw_path, question_dir)
+                    if not os.path.isdir(question_path):
+                        continue
+
+                    plaintexts_path = os.path.join(
+                        dir_raw_path,
+                        question_dir,
+                        "plaintexts_json"
+                    )
+                    plaintext_text = open(plaintexts_path).read()
+                    if len(plaintext_text) > 0:
+                        print_fail("* no pubkeys_json but it has votes in plaintext_json")
+                
+                print("* skipping virtual election / election with no votes..\n")
+                continue
+    
+            pubkeys = json.loads(open(pubkeys_path).read())
+
+            questions_path = os.path.join(dir_raw_path, 'questions_json')
+            questions_json = json.loads(open(questions_path).read())
+
+            print_info("* verifying proofs of knowledge of the plaintexts...")
             num_encrypted_invalid_votes, found = verify_votes_pok(
                 pubkeys,
                 dir_raw_path,
-                tallyfile_json,
+                questions_json,
                 hash
             )
             hash_found = hash_found or found
@@ -425,7 +440,7 @@ if __name__ == "__main__":
                     print_fail("* invalid question dirname FAILED")
                     raise Exception()
 
-                if i >= len(tallyfile_json2["questions"]):
+                if i >= len(questions_json):
                     print_fail("* invalid question dirname FAILED")
                     raise Exception()
 
