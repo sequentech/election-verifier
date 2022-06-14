@@ -30,7 +30,7 @@ jobs:
 
     - name: Install internal dependencies
       run: |
-        export INTERNAL_GIT_VERSION="6.1.1"
+        export INTERNAL_GIT_VERSION="6.1.2"
         git clone https://github.com/sequentech/tally-methods.git
         cd tally-methods && git checkout "${INTERNAL_GIT_VERSION}" && cd ..
         mv tally-methods/tally_methods .
