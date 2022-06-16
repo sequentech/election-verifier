@@ -19,7 +19,7 @@ rm -r -f dist
 mkdir dist
 cp -r tally_methods dist
 cp -r tally_pipes dist
-cp target/scala-2.10/proguard/election-verifier_2.10-6.1.3.jar dist
+cp target/scala-2.10/proguard/election-verifier_2.10-6.1.4.jar dist
 cp pverify.sh dist
 cp vmnc.sh dist
 cp verify.py dist
