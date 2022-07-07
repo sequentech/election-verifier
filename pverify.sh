@@ -22,5 +22,5 @@ fi
 
 command -v java >/dev/null 2>&1 || { echo >&2 "* I require java but it's not installed.  Aborting."; exit 1; }
 
-java -Djava.security.egd=file:/dev/./urandom -classpath election-verifier_2.10-6.1.4.jar org.sequent.sequent.Verifier $1 $2
+java -Djava.security.egd=file:/dev/./urandom -classpath election-verifier_2.10-6.1.5.jar org.sequent.sequent.Verifier $1 $2
 exit $?
