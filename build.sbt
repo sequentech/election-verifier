@@ -15,7 +15,7 @@
 
 name := "election-verifier"
 
-version := "7.1.1"
+version := "7.2.0"
 
 scalaVersion := "2.10.3"
 
