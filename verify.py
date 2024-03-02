@@ -18,6 +18,7 @@
 from tally_methods import tally as tally_methods
 import sys
 import os
+import csv
 import signal
 import hashlib
 import shutil
@@ -164,9 +165,12 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
             pubkeys[i]['g'] = int(pubkeys[i]['g'])
             pubkeys[i]['p'] = int(pubkeys[i]['p'])
 
-        found = False
-        for line in votes_file:
-            vote = json.loads(line)
+        found = 0
+        found_voter_id = None
+        votes_reader = csv.reader(votes_file, delimiter="|")
+        for line in votes_reader:
+            vote_str, voter_id = line
+            vote = json.loads(vote_str)
             linenum += 1
 
             if linenum % 1000 == 0 and not hash:
@@ -176,15 +180,44 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                     )
                 )
             
-            if (
-                hash and 
-                not found and
-                hash_f(line[:-1].encode('utf-8')).hexdigest() == hash
-            ):
-                found = True
-                print_success(
-                    "* Hash of the vote was successfully found: %s" % hash
-                )
+
+            hash_match = (
+                hash_f(vote_str[:-1].encode('utf-8')).hexdigest() == hash
+            )
+            if (hash and found == 0 and hash_match):
+                found = 1
+                weight_num = None
+                try:
+                    found_voter_id, weight_str = voter_id.split(".")
+                    weight_num = int(weight_str)
+                    assert weight_num == found
+                    print_success(
+                        "* Hash of the vote was successfully found: hash="
+                        f"{hash}, voter_id={found_voter_id}"
+                    )
+                except:
+                    print_fail(
+                        f"""
+                        * Hash={hash} of the vote found but with invalid 
+                        vote_weight={weight_num} (should be {found})
+                        """
+                    )
+                    sys.exit(1)
+            if (hash and found > 0 and hash_match):
+                found += 1
+                weight_num = None
+                try:
+                    found_voter_id, weight_str = voter_id.split(".")
+                    weight_num = int(weight_str)
+                    assert weight_num == found
+                except:
+                    print_fail(
+                        f"""
+                        * Hash={hash} of the vote found but with invalid 
+                        vote_weight={weight_num} (should be {found})
+                        """
+                    )
+                    sys.exit(1)
 
             is_invalid = False
             if not hash or (hash is not None and found):
