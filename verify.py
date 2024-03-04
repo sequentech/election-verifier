@@ -267,7 +267,7 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, search_hash):
         )
     if ballot_found:
         print_success(
-"""* Hash of the vote was successfully found:
+f"""* Hash of the vote was successfully found:
 \t- hash={hash}
 \t- voter_id={found_voter_id}
 \t- weight={weight_num}"""
