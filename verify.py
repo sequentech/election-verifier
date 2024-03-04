@@ -191,10 +191,6 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
 
                     weight_num = int(weight_str)
                     assert weight_num == ballot_found
-                    print_success(
-                        "* Hash of the vote was successfully found: hash="
-                        f"{hash}, voter_id={found_voter_id}"
-                    )
                 except:
                     print_fail(
                         f"""
@@ -203,7 +199,7 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                         """
                     )
                     sys.exit(1)
-            if (hash and ballot_found > 0 and hash_match):
+            elif (hash and ballot_found > 0 and hash_match):
                 ballot_found += 1
                 weight_num = None
                 try:
@@ -264,6 +260,15 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                 linenum,
                 num_invalid_votes
             )
+        )
+    else:
+        print_success(
+            """
+            * Hash of the vote was successfully found:
+            \t- hash={hash}
+            \t- voter_id={found_voter_id}
+            \t- weight={weight_num}
+            """
         )
     return num_invalid_votes, ballot_found
 
