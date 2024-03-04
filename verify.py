@@ -142,7 +142,7 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     #   commitment * (alpha) ^ challenge
     assert first_part == second_part
 
-def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
+def verify_votes_pok(pubkeys, dir_path, questions_json, search_hash):
     num_invalid_votes = 0
     linenum = 0
     ballot_found = 0
@@ -173,17 +173,16 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
             vote = json.loads(vote_str)
             linenum += 1
 
-            if linenum % 1000 == 0 and not hash:
+            if linenum % 1000 == 0 and not search_hash:
                 print_success(
                     "* Verified %d votes (%d invalid).." % (
                         linenum, num_invalid_votes
                     )
                 )
 
-            hash_match = (
-                hash_f(vote_str.encode('utf-8')).hexdigest() == hash
-            )
-            if (hash and ballot_found == 0 and hash_match):
+            current_hash = hash_f(vote_str.encode('utf-8')).hexdigest()
+            hash_match = (current_hash == search_hash)
+            if (search_hash and ballot_found == 0 and hash_match):
                 ballot_found = 1
                 weight_num = None
                 try:
@@ -194,12 +193,12 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                 except:
                     print_fail(
                         f"""
-                        * Hash={hash} of the vote found but with invalid 
+                        * Hash={search_hash} of the vote found but with invalid 
                         vote_weight={weight_num} (should be {ballot_found})
                         """
                     )
                     sys.exit(1)
-            elif (hash and ballot_found > 0 and hash_match):
+            elif (search_hash and ballot_found > 0 and hash_match):
                 ballot_found += 1
                 weight_num = None
                 try:
@@ -209,14 +208,21 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                 except:
                     print_fail(
                         f"""
-                        * Hash={hash} of the vote found but with invalid 
+                        * Hash={search_hash} of the vote found but with invalid 
                         vote_weight={weight_num} (should be {ballot_found})
                         """
                     )
                     sys.exit(1)
 
             is_invalid = False
-            if not hash or (hash is not None and ballot_found):
+            if (
+                not search_hash or 
+                (
+                    search_hash is not None and
+                    ballot_found == 1 and
+                    hash_match
+                )
+            ):
                 try:
                     for i in range(num_questions):
                         verify_pok_plaintext(
@@ -224,12 +230,10 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                             vote['proofs'][i],
                             vote['choices'][i]
                         )
-                    if hash is not None and ballot_found:
+                    if search_hash is not None:
                         print_success("* Verified POK of the found ballot")
-                        return 0, ballot_found
 
                 except SystemExit as e:
-                    break
                     raise e
                 except:
                     is_invalid = True
@@ -254,14 +258,14 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
         for f in outvotes_files:
           f.close()
     
-    if not hash:
+    if not search_hash:
         print_success(
             "* ..finished. Verified %d votes (%d invalid)" % (
                 linenum,
                 num_invalid_votes
             )
         )
-    else:
+    if ballot_found:
         print_success(
             """
             * Hash of the vote was successfully found:
