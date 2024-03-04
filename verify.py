@@ -242,18 +242,19 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, search_hash):
             if is_invalid:
                 continue
 
-            choice_num = 0
-            for f in outvotes_files:
-                f.write(
-                    json.dumps(
-                        vote['choices'][choice_num],
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":")
+            if not search_hash:
+                choice_num = 0
+                for f in outvotes_files:
+                    f.write(
+                        json.dumps(
+                            vote['choices'][choice_num],
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":")
+                        )
                     )
-                )
-                f.write("\n")
-                choice_num += 1
+                    f.write("\n")
+                    choice_num += 1
 
         for f in outvotes_files:
           f.close()
