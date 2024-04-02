@@ -18,6 +18,7 @@
 from tally_methods import tally as tally_methods
 import sys
 import os
+import csv
 import signal
 import hashlib
 import shutil
@@ -141,9 +142,11 @@ def verify_pok_plaintext(pk, proof, ciphertext):
     #   commitment * (alpha) ^ challenge
     assert first_part == second_part
 
-def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
+def verify_votes_pok(pubkeys, dir_path, questions_json, search_hash):
     num_invalid_votes = 0
     linenum = 0
+    ballot_found = 0
+    found_voter_id = None
     ciphertexts_path = os.path.join(dir_path, 'ciphertexts_json')
 
     with open(ciphertexts_path, mode='r') as votes_file:
@@ -164,30 +167,62 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
             pubkeys[i]['g'] = int(pubkeys[i]['g'])
             pubkeys[i]['p'] = int(pubkeys[i]['p'])
 
-        found = False
-        for line in votes_file:
-            vote = json.loads(line)
+        votes_reader = csv.reader(votes_file, delimiter="|")
+        for line in votes_reader:
+            vote_str, voter_id = line
+            vote = json.loads(vote_str)
             linenum += 1
 
-            if linenum % 1000 == 0 and not hash:
+            if linenum % 1000 == 0 and not search_hash:
                 print_success(
                     "* Verified %d votes (%d invalid).." % (
                         linenum, num_invalid_votes
                     )
                 )
-            
-            if (
-                hash and 
-                not found and
-                hash_f(line[:-1].encode('utf-8')).hexdigest() == hash
-            ):
-                found = True
-                print_success(
-                    "* Hash of the vote was successfully found: %s" % hash
-                )
+
+            current_hash = hash_f(vote_str.encode('utf-8')).hexdigest()
+            hash_match = (current_hash == search_hash)
+            if (search_hash and ballot_found == 0 and hash_match):
+                ballot_found = 1
+                weight_num = None
+                try:
+                    found_voter_id, weight_str = voter_id.split(".")
+
+                    weight_num = int(weight_str)
+                    assert weight_num == ballot_found
+                except:
+                    print_fail(
+                        f"""
+                        * Hash={search_hash} of the vote found but with invalid 
+                        vote_weight={weight_num} (should be {ballot_found})
+                        """
+                    )
+                    sys.exit(1)
+            elif (search_hash and ballot_found > 0 and hash_match):
+                ballot_found += 1
+                weight_num = None
+                try:
+                    found_voter_id, weight_str = voter_id.split(".")
+                    weight_num = int(weight_str)
+                    assert weight_num == ballot_found
+                except:
+                    print_fail(
+                        f"""
+                        * Hash={search_hash} of the vote found but with invalid 
+                        vote_weight={weight_num} (should be {ballot_found})
+                        """
+                    )
+                    sys.exit(1)
 
             is_invalid = False
-            if not hash or (hash is not None and found):
+            if (
+                not search_hash or 
+                (
+                    search_hash is not None and
+                    ballot_found == 1 and
+                    hash_match
+                )
+            ):
                 try:
                     for i in range(num_questions):
                         verify_pok_plaintext(
@@ -195,12 +230,10 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
                             vote['proofs'][i],
                             vote['choices'][i]
                         )
-                    if hash is not None and found:
+                    if search_hash is not None:
                         print_success("* Verified POK of the found ballot")
-                        return 0, found
 
                 except SystemExit as e:
-                    break
                     raise e
                 except:
                     is_invalid = True
@@ -209,30 +242,38 @@ def verify_votes_pok(pubkeys, dir_path, questions_json, hash):
             if is_invalid:
                 continue
 
-            choice_num = 0
-            for f in outvotes_files:
-                f.write(
-                    json.dumps(
-                        vote['choices'][choice_num],
-                        ensure_ascii=False,
-                        sort_keys=True,
-                        separators=(",", ":")
+            if not search_hash:
+                choice_num = 0
+                for f in outvotes_files:
+                    f.write(
+                        json.dumps(
+                            vote['choices'][choice_num],
+                            ensure_ascii=False,
+                            sort_keys=True,
+                            separators=(",", ":")
+                        )
                     )
-                )
-                f.write("\n")
-                choice_num += 1
+                    f.write("\n")
+                    choice_num += 1
 
         for f in outvotes_files:
           f.close()
     
-    if not hash:
+    if not search_hash:
         print_success(
             "* ..finished. Verified %d votes (%d invalid)" % (
                 linenum,
                 num_invalid_votes
             )
         )
-    return num_invalid_votes, found
+    if ballot_found:
+        print_success(
+f"""* Hash of the vote was successfully found:
+\t- hash={hash}
+\t- voter_id={found_voter_id}
+\t- weight={weight_num}"""
+        )
+    return num_invalid_votes, ballot_found
 
 if __name__ == "__main__":
 
@@ -386,13 +427,13 @@ if __name__ == "__main__":
             questions_json = json.loads(open(questions_path).read())
 
             print_info("* verifying proofs of knowledge of the plaintexts...")
-            num_encrypted_invalid_votes, found = verify_votes_pok(
+            num_encrypted_invalid_votes, found_this_time = verify_votes_pok(
                 pubkeys,
                 dir_raw_path,
                 questions_json,
                 hash
             )
-            hash_found = hash_found or found
+            hash_found = hash_found or found_this_time
             print_success(
                 "* proofs of knowledge of plaintexts OK (%d invalid)" % num_encrypted_invalid_votes
             )

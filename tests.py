@@ -18,7 +18,7 @@
 import unittest
 import subprocess
 
-def run_command(command, return_code=None, **kwargs):
+def run_command(command, return_code=None, stdout_contains_text=None, **kwargs):
     '''
     Utility to run a command.
     timeout is in seconds.
@@ -28,12 +28,21 @@ def run_command(command, return_code=None, **kwargs):
         process = subprocess.run(
             command,
             check=True,
+            stdout=subprocess.PIPE,
             **kwargs
         )
         return process
     except subprocess.CalledProcessError as error:
         if return_code == None or error.returncode != return_code:
             raise error
+    finally:
+        if stdout_contains_text:
+            if not process.stdout:
+                raise Exception(f"`{stdout_contains_text}` not in stdout")
+            process_stdout = process.stdout.decode('utf-8')
+            for check_text in stdout_contains_text:
+                if check_text not in process_stdout:
+                    raise Exception(f"`{check_text}` not in process_stdout")
 
 class TestStringMethods(unittest.TestCase):
     def test_election_8(self):
@@ -128,6 +137,20 @@ class TestStringMethods(unittest.TestCase):
                 "./testdata/8.tar",
                 "ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6"
             ],
+            stdout_contains_text=["weight=1"]
+        )
+
+    def test_election_8_existing_ballot_vote_weight(self):
+        '''
+        The ballot is located in the ballots.json file.
+        '''
+        run_command(
+            command=[
+                "./election-verifier",
+                "./testdata/8_vote_weight.tar",
+                "ae38e56fd663c142387ad9f69d710e9afd1e8c28da3f0ba93facdaae65d273e6"
+            ],
+            stdout_contains_text=["weight=2"]
         )
 
     def test_election_8_nonexisting_ballots(self):
