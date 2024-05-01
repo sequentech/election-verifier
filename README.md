@@ -122,11 +122,11 @@ appropiate version to use in your case.
 
 > :warning: **Note** You need to change the `INTERNAL_GIT_VERSION` you should be
 using depending on the version of [Sequent] platform used to run the election you
-want to verify. In this example, we're using version `10.4.1` of [Sequent] 
+want to verify. In this example, we're using version `10.4.2` of [Sequent] 
 platform.
 
 ```bash
-export INTERNAL_GIT_VERSION="10.4.1"
+export INTERNAL_GIT_VERSION="10.4.2"
 git clone https://github.com/sequentech/election-verifier.git
 cd election-verifier
 git checkout "${INTERNAL_GIT_VERSION}"
